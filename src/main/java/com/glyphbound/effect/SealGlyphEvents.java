@@ -33,13 +33,16 @@ import net.neoforged.neoforge.event.tick.ServerTickEvent;
 public final class SealGlyphEvents {
     private static final String SEAL_WORD = "印";
     private static final String CLEANSE_WORD = "净";
+    private static final String SPRING_WORD = "泉";
+    private static final String REST_WORD = "息";
     private static final String TOKEN_PREFIX = "glyphbound:seal:";
     private static final int MAX_DISTANCE = 10;
     private static final long TIMEOUT_TICKS = 1200L;
     private static final int MAX_ACTIVE_SEALS_PER_PLAYER_DIMENSION = 3;
     private static final long CLEANSE_REENTRY_COOLDOWN_TICKS = 1200L;
+    private static final int REST_STILL_TICKS = 60;
     private static final Set<String> SEALABLE_WORDS = Set.of(
-        "心", "忍", "坚", "稳", "隐", "明", "脉", "力", "怒", "净"
+        "心", "息", "忍", "坚", "稳", "隐", "明", "脉", "力", "怒", "净", "泉"
     );
 
     private static final Map<UUID, PendingSeal> pendingSeals = new HashMap<>();
@@ -70,6 +73,8 @@ public final class SealGlyphEvents {
         private final long expiresAt;
         private final Set<UUID> occupants = new HashSet<>();
         private final Map<UUID, Long> cleanseCooldowns = new HashMap<>();
+        private final Map<UUID, Long> springNextTriggers = new HashMap<>();
+        private final Map<UUID, SealRestState> restStates = new HashMap<>();
 
         private ActiveSeal(UUID owner, String word, BlockPos pos, InkStaffTier staffTier, ResourceKey<Level> dimension, long createdGameTime) {
             this.owner = owner;
@@ -78,7 +83,16 @@ public final class SealGlyphEvents {
             this.staffTier = staffTier;
             this.dimension = dimension;
             this.createdGameTime = createdGameTime;
-            this.expiresAt = createdGameTime + sealDurationTicks(staffTier);
+            this.expiresAt = createdGameTime + sealDurationTicks(word, staffTier);
+        }
+    }
+
+    private record SealRestState(double x, double y, double z, long stillSince) {
+        private boolean samePosition(ServerPlayer player) {
+            double dx = player.getX() - x;
+            double dy = player.getY() - y;
+            double dz = player.getZ() - z;
+            return dx * dx + dy * dy + dz * dz <= 0.0025D;
         }
     }
 
@@ -150,9 +164,10 @@ public final class SealGlyphEvents {
 
         event.setCanceled(true);
         event.setConsumeOnCancel(true);
-        if (CLEANSE_WORD.equals(event.mark().word())) {
-            createCleanseSeal(player, seal);
-            event.requestCloseInput("净印已成");
+        String word = event.mark().word();
+        if (CLEANSE_WORD.equals(word) || SPRING_WORD.equals(word) || REST_WORD.equals(word)) {
+            createActiveSeal(player, seal, word);
+            event.requestCloseInput(word + "印已成");
         } else if (SEALABLE_WORDS.contains(event.mark().word())) {
             event.requestCloseInput(event.mark().word() + "印尚未接入");
         } else {
@@ -161,7 +176,7 @@ public final class SealGlyphEvents {
         destroySeal(player);
     }
 
-    private static void createCleanseSeal(ServerPlayer player, PendingSeal pending) {
+    private static void createActiveSeal(ServerPlayer player, PendingSeal pending, String word) {
         long gameTime = player.serverLevel().getGameTime();
         activeSeals.entrySet().removeIf(entry -> {
             ActiveSeal seal = entry.getValue();
@@ -172,7 +187,7 @@ public final class SealGlyphEvents {
 
         ActiveSeal seal = new ActiveSeal(
             player.getUUID(),
-            CLEANSE_WORD,
+            word,
             pending.selectedBlock(),
             pending.staffTier(),
             pending.dimension(),
@@ -301,6 +316,10 @@ public final class SealGlyphEvents {
 
         if (CLEANSE_WORD.equals(seal.word) && gameTime % 10L == 0L) {
             tickCleanseSeal(level, seal, gameTime);
+        } else if (SPRING_WORD.equals(seal.word) && gameTime % 20L == 0L) {
+            tickSpringSeal(level, seal, gameTime);
+        } else if (REST_WORD.equals(seal.word) && gameTime % 20L == 0L) {
+            tickRestSeal(level, seal, gameTime);
         }
         return false;
     }
@@ -339,6 +358,59 @@ public final class SealGlyphEvents {
         if (removable != null && player.removeEffect(removable)) {
             player.getFoodData().addExhaustion(0.8F);
             player.displayClientMessage(Component.literal("净印: 清去一缕污秽"), true);
+        }
+    }
+
+    private static void tickSpringSeal(ServerLevel level, ActiveSeal seal, long gameTime) {
+        SpringSealSpec spec = springSealSpec(seal.staffTier);
+        for (ServerPlayer player : playersInside(level, seal, spec.radius())) {
+            long next = seal.springNextTriggers.getOrDefault(player.getUUID(), 0L);
+            if (next > gameTime) {
+                continue;
+            }
+            healFromSeal(player, spec.healAmount());
+            seal.springNextTriggers.put(player.getUUID(), gameTime + spec.intervalTicks());
+            level.sendParticles(ParticleTypes.SPLASH, player.getX(), player.getY() + 1.0D, player.getZ(), 8, 0.35D, 0.2D, 0.35D, 0.03D);
+        }
+        seal.springNextTriggers.entrySet().removeIf(entry -> gameTime - entry.getValue() > spec.intervalTicks() * 2L);
+    }
+
+    private static void tickRestSeal(ServerLevel level, ActiveSeal seal, long gameTime) {
+        RestSealSpec spec = restSealSpec(seal.staffTier);
+        Set<UUID> currentlyInside = new HashSet<>();
+        for (ServerPlayer player : playersInside(level, seal, sealRadius(seal.staffTier))) {
+            currentlyInside.add(player.getUUID());
+            SealRestState state = seal.restStates.get(player.getUUID());
+            if (state == null || !state.samePosition(player)) {
+                seal.restStates.put(player.getUUID(), new SealRestState(player.getX(), player.getY(), player.getZ(), gameTime));
+                continue;
+            }
+            if (gameTime - state.stillSince < REST_STILL_TICKS || gameTime % spec.intervalTicks() != 0L) {
+                continue;
+            }
+            healFromSeal(player, spec.healAmount());
+            if (player.getFoodData().getFoodLevel() < 20) {
+                player.getFoodData().eat(spec.foodAmount(), spec.saturation());
+            }
+            level.sendParticles(ParticleTypes.COMPOSTER, player.getX(), player.getY() + 1.0D, player.getZ(), 4, 0.25D, 0.25D, 0.25D, 0.01D);
+        }
+        seal.restStates.keySet().removeIf(playerId -> !currentlyInside.contains(playerId));
+    }
+
+    private static Set<ServerPlayer> playersInside(ServerLevel level, ActiveSeal seal, double radius) {
+        Set<ServerPlayer> result = new HashSet<>();
+        AABB bounds = new AABB(seal.pos).inflate(radius);
+        for (ServerPlayer player : level.getEntitiesOfClass(ServerPlayer.class, bounds)) {
+            if (player.distanceToSqr(seal.pos.getX() + 0.5D, seal.pos.getY() + 0.5D, seal.pos.getZ() + 0.5D) <= radius * radius) {
+                result.add(player);
+            }
+        }
+        return result;
+    }
+
+    private static void healFromSeal(ServerPlayer player, float amount) {
+        if (player.getHealth() < player.getMaxHealth()) {
+            player.heal(amount * WorldGlyphEvents.healingMultiplier(player));
         }
     }
 
@@ -384,7 +456,10 @@ public final class SealGlyphEvents {
         };
     }
 
-    private static long sealDurationTicks(InkStaffTier tier) {
+    private static long sealDurationTicks(String word, InkStaffTier tier) {
+        if (SPRING_WORD.equals(word)) {
+            return springSealSpec(tier).durationTicks();
+        }
         int seconds = switch (tier) {
             case WOOD -> 180;
             case STONE -> 240;
@@ -394,5 +469,43 @@ public final class SealGlyphEvents {
             case DIAMOND, NETHERITE -> 720;
         };
         return seconds * 20L;
+    }
+
+    private static SpringSealSpec springSealSpec(InkStaffTier tier) {
+        return switch (tier) {
+            case WOOD -> new SpringSealSpec(5, ticksSeconds(20), 5.0F, ticksMinutes(4));
+            case STONE -> new SpringSealSpec(7, ticksSeconds(18), 7.0F, ticksMinutes(5));
+            case COPPER -> new SpringSealSpec(9, ticksSeconds(16), 8.0F, ticksMinutes(6));
+            case IRON -> new SpringSealSpec(12, ticksSeconds(14), 10.0F, ticksMinutes(7));
+            case GOLD -> new SpringSealSpec(14, ticksSeconds(12), 12.0F, ticksMinutes(6));
+            case DIAMOND -> new SpringSealSpec(18, ticksSeconds(10), 14.0F, ticksMinutes(9));
+            case NETHERITE -> new SpringSealSpec(24, ticksSeconds(8), 16.0F, ticksMinutes(10));
+        };
+    }
+
+    private static RestSealSpec restSealSpec(InkStaffTier tier) {
+        return switch (tier) {
+            case WOOD -> new RestSealSpec(ticksSeconds(4), 1.0F, 1, 0.15F);
+            case STONE -> new RestSealSpec(ticksSeconds(4), 1.0F, 1, 0.20F);
+            case COPPER -> new RestSealSpec(ticksSeconds(3), 1.25F, 1, 0.25F);
+            case IRON -> new RestSealSpec(ticksSeconds(3), 1.5F, 1, 0.30F);
+            case GOLD -> new RestSealSpec(ticksSeconds(2), 1.5F, 1, 0.35F);
+            case DIAMOND -> new RestSealSpec(ticksSeconds(3), 2.0F, 2, 0.45F);
+            case NETHERITE -> new RestSealSpec(ticksSeconds(2), 2.0F, 2, 0.55F);
+        };
+    }
+
+    private static long ticksSeconds(int seconds) {
+        return seconds * 20L;
+    }
+
+    private static long ticksMinutes(int minutes) {
+        return ticksSeconds(minutes * 60);
+    }
+
+    private record SpringSealSpec(double radius, long intervalTicks, float healAmount, long durationTicks) {
+    }
+
+    private record RestSealSpec(long intervalTicks, float healAmount, int foodAmount, float saturation) {
     }
 }

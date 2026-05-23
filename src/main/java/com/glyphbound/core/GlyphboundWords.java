@@ -14,7 +14,8 @@ public final class GlyphboundWords {
     );
 
     public static final Set<String> EVENTS = Set.of(
-        "入", "劫", "出"
+        "入", "劫", "出",
+        "泉", "墨"
     );
 
     public static final Set<String> SEALS = Set.of(
@@ -34,7 +35,8 @@ public final class GlyphboundWords {
         "力", "怒",
         "脉", "魄",
         "入", "劫", "出",
-        "印"
+        "印",
+        "泉", "墨"
     );
 
     private GlyphboundWords() {
