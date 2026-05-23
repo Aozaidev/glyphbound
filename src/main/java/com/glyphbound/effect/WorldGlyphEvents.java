@@ -339,12 +339,17 @@ public final class WorldGlyphEvents {
             if (isInsideAnyInkField(living, gameTime)) {
                 return false;
             }
-            clearMobBoost(living);
+            removeInkBoostAttributes(living);
             return true;
         });
     }
 
     private static void clearMobBoost(Entity entity) {
+        removeInkBoostAttributes(entity);
+        boostedMobs.remove(entity.getUUID());
+    }
+
+    private static void removeInkBoostAttributes(Entity entity) {
         if (entity instanceof LivingEntity living) {
             GlyphAttributes.remove(living, Attributes.MAX_HEALTH, INK_MAX_HEALTH);
             GlyphAttributes.remove(living, Attributes.ATTACK_DAMAGE, INK_ATTACK_DAMAGE);
@@ -353,7 +358,6 @@ public final class WorldGlyphEvents {
                 living.setHealth(living.getMaxHealth());
             }
         }
-        boostedMobs.remove(entity.getUUID());
     }
 
     private static boolean isInInkField(ServerPlayer player, long gameTime) {
