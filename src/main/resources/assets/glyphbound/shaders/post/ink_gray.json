@@ -1,0 +1,27 @@
+{
+  "targets": [
+    "swap"
+  ],
+  "passes": [
+    {
+      "name": "glyphbound:ink_gray",
+      "intarget": "minecraft:main",
+      "outtarget": "swap",
+      "uniforms": [
+        {
+          "name": "GrayAmount",
+          "values": [ 1.0 ]
+        },
+        {
+          "name": "InkAmount",
+          "values": [ 0.18 ]
+        }
+      ]
+    },
+    {
+      "name": "blit",
+      "intarget": "swap",
+      "outtarget": "minecraft:main"
+    }
+  ]
+}

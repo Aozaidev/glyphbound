@@ -410,7 +410,7 @@ public final class SealGlyphEvents {
 
     private static void healFromSeal(ServerPlayer player, float amount) {
         if (player.getHealth() < player.getMaxHealth()) {
-            player.heal(amount * WorldGlyphEvents.healingMultiplier(player));
+            player.heal(amount);
         }
     }
 

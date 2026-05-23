@@ -4,9 +4,11 @@ import com.aozainkmc.api.InkMark;
 import com.aozainkmc.api.InkStaffMetadata;
 import com.aozainkmc.api.InkStaffTier;
 import com.aozainkmc.api.InkTargetType;
+import com.aozainkmc.core.event.InkMarkBeforeAttachEvent;
 import com.aozainkmc.core.event.InkMarkAttachedEvent;
 import com.glyphbound.Glyphbound;
 import com.glyphbound.core.GlyphAttributes;
+import com.glyphbound.core.GlyphboundItems;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -19,17 +21,24 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
+import net.minecraft.world.entity.item.ItemEntity;
+import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.monster.Enemy;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.AABB;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.event.entity.living.LivingDamageEvent;
 import net.neoforged.neoforge.event.entity.living.LivingDeathEvent;
+import net.neoforged.neoforge.event.entity.living.LivingDropsEvent;
+import net.neoforged.neoforge.event.entity.living.LivingHealEvent;
+import net.neoforged.neoforge.event.entity.living.LivingKnockBackEvent;
 import net.neoforged.neoforge.event.entity.player.PlayerEvent;
 import net.neoforged.neoforge.event.server.ServerStoppedEvent;
 import net.neoforged.neoforge.event.tick.ServerTickEvent;
@@ -45,8 +54,35 @@ public final class WorldGlyphEvents {
     private static final Map<UUID, Long> springCooldowns = new HashMap<>();
     private static final Map<UUID, InkFieldState> inkFields = new HashMap<>();
     private static final Map<UUID, ResourceKey<Level>> boostedMobs = new HashMap<>();
+    private static final Map<UUID, Float> inkDurabilityDebt = new HashMap<>();
+    private static final Map<UUID, Long> inkPlayerHitTargets = new HashMap<>();
 
     private WorldGlyphEvents() {
+    }
+
+    @SubscribeEvent
+    public static void onInkMarkBeforeAttach(InkMarkBeforeAttachEvent event) {
+        ServerPlayer player = event.player();
+        long gameTime = player.level().getGameTime();
+        if (!isInInkField(player, gameTime)) {
+            return;
+        }
+        if (INK_FIELD_WORD.equals(event.mark().word())) {
+            event.setCanceled(true);
+            event.requestCloseInput("墨: 场内不可复写");
+            return;
+        }
+
+        float debt = inkDurabilityDebt.getOrDefault(player.getUUID(), 0.0F) + 0.2F;
+        int extra = 0;
+        if (debt >= 1.0F) {
+            extra = (int) debt;
+            debt -= extra;
+        }
+        inkDurabilityDebt.put(player.getUUID(), debt);
+        if (extra > 0) {
+            event.addExtraDurabilityCost(extra);
+        }
     }
 
     @SubscribeEvent
@@ -65,6 +101,7 @@ public final class WorldGlyphEvents {
     public static void onServerTick(ServerTickEvent.Post event) {
         long gameTime = event.getServer().overworld().getGameTime();
         springCooldowns.entrySet().removeIf(entry -> entry.getValue() <= gameTime);
+        inkPlayerHitTargets.entrySet().removeIf(entry -> entry.getValue() < gameTime);
         inkFields.entrySet().removeIf(entry -> tickInkField(event, entry.getKey(), entry.getValue(), gameTime));
         if (gameTime % 20L == 0L) {
             cleanupMobBoosts(event, gameTime);
@@ -76,7 +113,42 @@ public final class WorldGlyphEvents {
         Entity attacker = event.getSource().getEntity();
         if (attacker instanceof ServerPlayer player && isInInkField(player, player.level().getGameTime())) {
             event.setNewDamage(event.getNewDamage() * 3.0F);
+            inkPlayerHitTargets.put(event.getEntity().getUUID(), player.level().getGameTime() + 2L);
         }
+    }
+
+    @SubscribeEvent
+    public static void onLivingKnockBack(LivingKnockBackEvent event) {
+        Long expiresAt = inkPlayerHitTargets.get(event.getEntity().getUUID());
+        long gameTime = event.getEntity().level().getGameTime();
+        if (expiresAt == null || expiresAt < gameTime) {
+            return;
+        }
+        event.setStrength(event.getStrength() * 2.0F);
+    }
+
+    @SubscribeEvent
+    public static void onLivingHeal(LivingHealEvent event) {
+        if (event.getEntity() instanceof ServerPlayer player && isInInkField(player, player.level().getGameTime())) {
+            event.setAmount(event.getAmount() * 3.0F);
+        }
+    }
+
+    @SubscribeEvent
+    public static void onLivingDrops(LivingDropsEvent event) {
+        if (!(event.getEntity() instanceof Enemy) || !(event.getEntity().level() instanceof ServerLevel level)) {
+            return;
+        }
+        Entity attacker = event.getSource().getEntity();
+        boolean rewarded = attacker instanceof ServerPlayer player && isInInkField(player, player.level().getGameTime())
+            || isInsideAnyInkField(event.getEntity(), event.getEntity().level().getGameTime());
+        if (!rewarded || level.random.nextFloat() >= 0.30F) {
+            return;
+        }
+
+        ItemStack core = new ItemStack(GlyphboundItems.INK_CORE.get());
+        ItemEntity drop = new ItemEntity(level, event.getEntity().getX(), event.getEntity().getY() + 0.25D, event.getEntity().getZ(), core);
+        event.getDrops().add(drop);
     }
 
     @SubscribeEvent
@@ -84,6 +156,7 @@ public final class WorldGlyphEvents {
         if (event.getEntity() instanceof ServerPlayer player) {
             inkFields.remove(player.getUUID());
             springCooldowns.remove(player.getUUID());
+            inkDurabilityDebt.remove(player.getUUID());
         }
         clearMobBoost(event.getEntity());
     }
@@ -92,6 +165,7 @@ public final class WorldGlyphEvents {
     public static void onPlayerLoggedOut(PlayerEvent.PlayerLoggedOutEvent event) {
         inkFields.remove(event.getEntity().getUUID());
         springCooldowns.remove(event.getEntity().getUUID());
+        inkDurabilityDebt.remove(event.getEntity().getUUID());
     }
 
     @SubscribeEvent
@@ -104,10 +178,19 @@ public final class WorldGlyphEvents {
         inkFields.clear();
         springCooldowns.clear();
         boostedMobs.clear();
+        inkDurabilityDebt.clear();
+        inkPlayerHitTargets.clear();
     }
 
     public static float healingMultiplier(ServerPlayer player) {
-        return isInInkField(player, player.level().getGameTime()) ? 3.0F : 1.0F;
+        return 1.0F;
+    }
+
+    public static boolean isInkFieldOwnerActive(UUID owner, String dimension, long gameTime) {
+        InkFieldState field = inkFields.get(owner);
+        return field != null
+            && field.expiresAt > gameTime
+            && field.dimension.location().toString().equals(dimension);
     }
 
     private static void castSpring(InkMark mark) {
@@ -178,6 +261,9 @@ public final class WorldGlyphEvents {
         if (gameTime % 20L == 0L) {
             boostMobsInField(level, owner, spec, gameTime);
         }
+        if (gameTime % 80L == 0L && level.random.nextFloat() < 0.50F) {
+            spawnInkPressureMob(level, owner, spec);
+        }
         return false;
     }
 
@@ -200,6 +286,44 @@ public final class WorldGlyphEvents {
                 aiMob.setTarget(owner);
             }
         }
+    }
+
+    private static void spawnInkPressureMob(ServerLevel level, ServerPlayer owner, InkFieldSpec spec) {
+        AABB area = owner.getBoundingBox().inflate(spec.radius());
+        int nearbyEnemies = level.getEntitiesOfClass(LivingEntity.class, area, entity -> entity instanceof Enemy && entity.isAlive()).size();
+        if (nearbyEnemies >= 24) {
+            return;
+        }
+
+        double angle = level.random.nextDouble() * Math.PI * 2.0D;
+        double distance = Math.max(4.0D, spec.radius() - 1.5D);
+        BlockPos start = BlockPos.containing(owner.getX() + Math.cos(angle) * distance, owner.getY(), owner.getZ() + Math.sin(angle) * distance);
+        BlockPos spawnPos = findSpawnPos(level, start);
+        if (spawnPos == null) {
+            return;
+        }
+
+        EntityType<? extends Mob> type = level.random.nextBoolean() ? EntityType.ZOMBIE : EntityType.SPIDER;
+        Mob mob = type.create(level);
+        if (mob == null) {
+            return;
+        }
+        mob.moveTo(spawnPos.getX() + 0.5D, spawnPos.getY(), spawnPos.getZ() + 0.5D, level.random.nextFloat() * 360.0F, 0.0F);
+        mob.setTarget(owner);
+        level.addFreshEntity(mob);
+        level.sendParticles(ParticleTypes.SQUID_INK, mob.getX(), mob.getY() + 0.6D, mob.getZ(), 12, 0.4D, 0.35D, 0.4D, 0.02D);
+    }
+
+    private static BlockPos findSpawnPos(ServerLevel level, BlockPos start) {
+        for (int dy = 3; dy >= -5; dy--) {
+            BlockPos pos = start.offset(0, dy, 0);
+            if (level.getBlockState(pos.below()).isSolidRender(level, pos.below())
+                && level.getBlockState(pos).isAir()
+                && level.getBlockState(pos.above()).isAir()) {
+                return pos;
+            }
+        }
+        return null;
     }
 
     private static void cleanupMobBoosts(ServerTickEvent.Post event, long gameTime) {
@@ -253,9 +377,8 @@ public final class WorldGlyphEvents {
     }
 
     private static void healSpring(ServerPlayer player, float amount) {
-        float scaled = amount * healingMultiplier(player);
         if (player.getHealth() < player.getMaxHealth()) {
-            player.heal(scaled);
+            player.heal(amount);
         }
     }
 
