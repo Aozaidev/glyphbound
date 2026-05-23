@@ -9,17 +9,24 @@ import com.aozainkmc.core.event.InkMarkAttachedEvent;
 import com.glyphbound.Glyphbound;
 import com.glyphbound.core.GlyphAttributes;
 import com.glyphbound.core.GlyphboundItems;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.effect.MobEffectInstance;
+import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
@@ -31,7 +38,11 @@ import net.minecraft.world.entity.monster.Enemy;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.AABB;
+import net.minecraft.world.phys.Vec3;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.event.entity.living.LivingDamageEvent;
@@ -40,6 +51,7 @@ import net.neoforged.neoforge.event.entity.living.LivingDropsEvent;
 import net.neoforged.neoforge.event.entity.living.LivingHealEvent;
 import net.neoforged.neoforge.event.entity.living.LivingKnockBackEvent;
 import net.neoforged.neoforge.event.entity.player.PlayerEvent;
+import net.neoforged.neoforge.event.level.BlockEvent;
 import net.neoforged.neoforge.event.server.ServerStoppedEvent;
 import net.neoforged.neoforge.event.tick.ServerTickEvent;
 
@@ -47,6 +59,8 @@ import net.neoforged.neoforge.event.tick.ServerTickEvent;
 public final class WorldGlyphEvents {
     private static final String SPRING_WORD = "泉";
     private static final String INK_FIELD_WORD = "墨";
+    private static final String MOUNTAIN_WORD = "山";
+    private static final String RIFT_WORD = "裂";
     private static final ResourceLocation INK_MAX_HEALTH = id("ink_field_max_health");
     private static final ResourceLocation INK_ATTACK_DAMAGE = id("ink_field_attack_damage");
     private static final ResourceLocation INK_MOVEMENT_SPEED = id("ink_field_movement_speed");
@@ -56,6 +70,8 @@ public final class WorldGlyphEvents {
     private static final Map<UUID, ResourceKey<Level>> boostedMobs = new HashMap<>();
     private static final Map<UUID, Float> inkDurabilityDebt = new HashMap<>();
     private static final Map<UUID, Long> inkPlayerHitTargets = new HashMap<>();
+    private static final Map<UUID, TemporaryTerrain> terrains = new LinkedHashMap<>();
+    private static final Map<TerrainBlockKey, UUID> terrainBlocks = new HashMap<>();
 
     private WorldGlyphEvents() {
     }
@@ -94,6 +110,14 @@ public final class WorldGlyphEvents {
         }
         if (INK_FIELD_WORD.equals(mark.word())) {
             castInkField(mark);
+            return;
+        }
+        if (MOUNTAIN_WORD.equals(mark.word())) {
+            castMountain(mark);
+            return;
+        }
+        if (RIFT_WORD.equals(mark.word())) {
+            castRift(mark);
         }
     }
 
@@ -103,6 +127,7 @@ public final class WorldGlyphEvents {
         springCooldowns.entrySet().removeIf(entry -> entry.getValue() <= gameTime);
         inkPlayerHitTargets.entrySet().removeIf(entry -> entry.getValue() < gameTime);
         inkFields.entrySet().removeIf(entry -> tickInkField(event, entry.getKey(), entry.getValue(), gameTime));
+        tickTerrains(event, gameTime);
         if (gameTime % 20L == 0L) {
             cleanupMobBoosts(event, gameTime);
         }
@@ -157,6 +182,7 @@ public final class WorldGlyphEvents {
             inkFields.remove(player.getUUID());
             springCooldowns.remove(player.getUUID());
             inkDurabilityDebt.remove(player.getUUID());
+            removeOwnerTerrains(player.getUUID(), event.getEntity().level().getServer());
         }
         clearMobBoost(event.getEntity());
     }
@@ -166,6 +192,7 @@ public final class WorldGlyphEvents {
         inkFields.remove(event.getEntity().getUUID());
         springCooldowns.remove(event.getEntity().getUUID());
         inkDurabilityDebt.remove(event.getEntity().getUUID());
+        removeOwnerTerrains(event.getEntity().getUUID(), event.getEntity().level().getServer());
     }
 
     @SubscribeEvent
@@ -175,11 +202,37 @@ public final class WorldGlyphEvents {
 
     @SubscribeEvent
     public static void onServerStopped(ServerStoppedEvent event) {
+        for (TemporaryTerrain terrain : new ArrayList<>(terrains.values())) {
+            rollbackTerrain(event.getServer().getLevel(terrain.dimension), terrain);
+        }
         inkFields.clear();
         springCooldowns.clear();
         boostedMobs.clear();
         inkDurabilityDebt.clear();
         inkPlayerHitTargets.clear();
+        terrains.clear();
+        terrainBlocks.clear();
+    }
+
+    @SubscribeEvent
+    public static void onBlockBreak(BlockEvent.BreakEvent event) {
+        if (!(event.getLevel() instanceof ServerLevel level)) {
+            return;
+        }
+        UUID terrainId = terrainBlocks.get(new TerrainBlockKey(level.dimension(), event.getPos()));
+        if (terrainId == null) {
+            return;
+        }
+        TemporaryTerrain terrain = terrains.get(terrainId);
+        if (terrain == null) {
+            return;
+        }
+        event.setCanceled(true);
+        rollbackTerrain(level, terrain);
+        ServerPlayer owner = level.getServer().getPlayerList().getPlayer(terrain.owner);
+        if (owner != null) {
+            owner.displayClientMessage(Component.literal(terrain.word + ": 临时地形已回卷"), true);
+        }
     }
 
     public static float healingMultiplier(ServerPlayer player) {
@@ -241,6 +294,81 @@ public final class WorldGlyphEvents {
         InkFieldSpec spec = inkFieldSpec(InkStaffMetadata.tier(mark));
         inkFields.put(owner.getUUID(), new InkFieldState(owner.getUUID(), owner.level().dimension(), InkStaffMetadata.tier(mark), owner.level().getGameTime() + spec.durationTicks()));
         owner.displayClientMessage(Component.literal("墨: 墨染场展开"), true);
+    }
+
+    private static void castMountain(InkMark mark) {
+        ServerPlayer owner = findOwner(mark);
+        if (owner == null) {
+            return;
+        }
+        if (mark.target().type() != InkTargetType.MARKER) {
+            owner.displayClientMessage(Component.literal("山: 需用铭刻阵指定方块"), true);
+            return;
+        }
+        ServerLevel level = owner.serverLevel();
+        MountainSpec spec = mountainSpec(InkStaffMetadata.tier(mark));
+        BlockPos target = BlockPos.of(mark.target().packedBlockPos());
+        BlockPos base = level.getBlockState(target).isAir() ? target : target.above();
+        Direction facing = owner.getDirection();
+        Direction.Axis axis = facing.getAxis() == Direction.Axis.Z ? Direction.Axis.X : Direction.Axis.Z;
+
+        TemporaryTerrain terrain = new TemporaryTerrain(
+            MOUNTAIN_WORD,
+            owner.getUUID(),
+            level.dimension(),
+            level.getGameTime(),
+            level.getGameTime() + spec.durationTicks(),
+            base,
+            InkStaffMetadata.tier(mark)
+        );
+        terrain.thornDamage = spec.thornDamage();
+
+        for (int offset = -2; offset <= 2; offset++) {
+            for (int y = 0; y < spec.height(); y++) {
+                BlockPos pos = offset(base, axis, offset).above(y);
+                BlockState original = level.getBlockState(pos);
+                if (!canReplaceWithTemporary(level, pos, original)) {
+                    owner.displayClientMessage(Component.literal("山: 此处地脉太重，不能立山"), true);
+                    return;
+                }
+                terrain.addChange(pos, original, mountainState(spec, offset, y));
+            }
+        }
+
+        if (applyTerrain(level, terrain)) {
+            terrains.put(terrain.id, terrain);
+            owner.displayClientMessage(Component.literal("山: 石脊立起"), true);
+            level.sendParticles(ParticleTypes.POOF, base.getX() + 0.5D, base.getY() + 1.0D, base.getZ() + 0.5D, 28, 2.8D, 0.9D, 2.8D, 0.03D);
+        }
+    }
+
+    private static void castRift(InkMark mark) {
+        ServerPlayer owner = findOwner(mark);
+        if (owner == null) {
+            return;
+        }
+        if (mark.target().type() != InkTargetType.MARKER) {
+            owner.displayClientMessage(Component.literal("裂: 需用铭刻阵指定方块"), true);
+            return;
+        }
+
+        ServerLevel level = owner.serverLevel();
+        RiftSpec spec = riftSpec(InkStaffMetadata.tier(mark));
+        BlockPos target = BlockPos.of(mark.target().packedBlockPos());
+        BlockPos surface = level.getBlockState(target).isAir() ? target.below() : target;
+        TemporaryTerrain terrain = new TemporaryTerrain(
+            RIFT_WORD,
+            owner.getUUID(),
+            level.dimension(),
+            level.getGameTime() + 20L,
+            level.getGameTime() + spec.durationTicks(),
+            surface,
+            InkStaffMetadata.tier(mark)
+        );
+        terrain.riftSpec = spec;
+        terrains.put(terrain.id, terrain);
+        owner.displayClientMessage(Component.literal("裂: 地鸣将开"), true);
+        level.sendParticles(ParticleTypes.SMOKE, surface.getX() + 0.5D, surface.getY() + 1.0D, surface.getZ() + 0.5D, 20, spec.radius(), 0.2D, spec.radius(), 0.02D);
     }
 
     private static boolean tickInkField(ServerTickEvent.Post event, UUID ownerId, InkFieldState field, long gameTime) {
@@ -397,6 +525,208 @@ public final class WorldGlyphEvents {
         }
     }
 
+    private static void tickTerrains(ServerTickEvent.Post event, long gameTime) {
+        for (TemporaryTerrain terrain : new ArrayList<>(terrains.values())) {
+            ServerLevel level = event.getServer().getLevel(terrain.dimension);
+            if (level == null) {
+                terrains.remove(terrain.id);
+                continue;
+            }
+            if (!terrain.applied && gameTime >= terrain.applyAt) {
+                if (RIFT_WORD.equals(terrain.word)) {
+                    if (!prepareRift(level, terrain)) {
+                        terrains.remove(terrain.id);
+                        notifyOwner(event, terrain, "裂: 此处地脉太硬，不能开裂");
+                        continue;
+                    }
+                    applyTerrain(level, terrain);
+                }
+            }
+            if (terrain.applied && gameTime >= terrain.expiresAt) {
+                rollbackTerrain(level, terrain);
+                continue;
+            }
+            if (terrain.applied && gameTime % 20L == 0L) {
+                tickTerrainEffects(level, terrain, gameTime);
+            }
+        }
+    }
+
+    private static void notifyOwner(ServerTickEvent.Post event, TemporaryTerrain terrain, String message) {
+        ServerPlayer owner = event.getServer().getPlayerList().getPlayer(terrain.owner);
+        if (owner != null) {
+            owner.displayClientMessage(Component.literal(message), true);
+        }
+    }
+
+    private static boolean prepareRift(ServerLevel level, TemporaryTerrain terrain) {
+        RiftSpec spec = terrain.riftSpec;
+        if (spec == null) {
+            return false;
+        }
+        Set<BlockPos> planned = new HashSet<>();
+        for (int dx = -spec.radius(); dx <= spec.radius(); dx++) {
+            for (int dz = -spec.radius(); dz <= spec.radius(); dz++) {
+                int edge = Math.max(Math.abs(dx), Math.abs(dz));
+                int depth = spec.edgeShallow() && edge == spec.radius() ? 1 : 2;
+                for (int dy = 0; dy < depth; dy++) {
+                    BlockPos pos = terrain.origin.offset(dx, -dy, dz);
+                    BlockState original = level.getBlockState(pos);
+                    if (!canRemoveForRift(level, pos, original)) {
+                        return false;
+                    }
+                    planned.add(pos);
+                    terrain.addChange(pos, original, Blocks.AIR.defaultBlockState());
+                }
+            }
+        }
+        terrain.riftArea.addAll(planned);
+        return !terrain.changes.isEmpty();
+    }
+
+    private static boolean applyTerrain(ServerLevel level, TemporaryTerrain terrain) {
+        for (TerrainChange change : terrain.changes.values()) {
+            level.setBlock(change.pos, change.temporary, 3);
+            terrainBlocks.put(new TerrainBlockKey(terrain.dimension, change.pos), terrain.id);
+        }
+        terrain.applied = true;
+        return true;
+    }
+
+    private static void rollbackTerrain(ServerLevel level, TemporaryTerrain terrain) {
+        if (level != null) {
+            for (TerrainChange change : new ArrayList<>(terrain.changes.values())) {
+                BlockState current = level.getBlockState(change.pos);
+                if (current == change.temporary || current.is(change.temporary.getBlock()) || current.isAir()) {
+                    level.setBlock(change.pos, change.original, 3);
+                }
+                terrainBlocks.remove(new TerrainBlockKey(terrain.dimension, change.pos));
+            }
+        } else {
+            for (TerrainChange change : terrain.changes.values()) {
+                terrainBlocks.remove(new TerrainBlockKey(terrain.dimension, change.pos));
+            }
+        }
+        terrains.remove(terrain.id);
+    }
+
+    private static void tickTerrainEffects(ServerLevel level, TemporaryTerrain terrain, long gameTime) {
+        if (MOUNTAIN_WORD.equals(terrain.word)) {
+            if (terrain.thornDamage > 0.0F) {
+                AABB area = terrain.bounds().inflate(1.0D);
+                for (LivingEntity entity : level.getEntitiesOfClass(LivingEntity.class, area, entity -> entity instanceof Enemy && entity.isAlive())) {
+                    if (isNearAny(terrain.changes.keySet(), entity.position(), 1.8D)) {
+                        entity.hurt(level.damageSources().magic(), terrain.thornDamage);
+                    }
+                }
+                level.sendParticles(ParticleTypes.CRIT, terrain.origin.getX() + 0.5D, terrain.origin.getY() + 1.5D, terrain.origin.getZ() + 0.5D, 10, 2.5D, 1.2D, 2.5D, 0.02D);
+            }
+            return;
+        }
+
+        if (!RIFT_WORD.equals(terrain.word) || terrain.riftSpec == null) {
+            return;
+        }
+        RiftSpec spec = terrain.riftSpec;
+        AABB area = new AABB(terrain.origin).inflate(spec.radius() + 0.8D, 2.2D, spec.radius() + 0.8D);
+        if (spec.inkParticles()) {
+            level.sendParticles(ParticleTypes.SQUID_INK, terrain.origin.getX() + 0.5D, terrain.origin.getY() - 1.2D, terrain.origin.getZ() + 0.5D, 10, spec.radius(), 0.25D, spec.radius(), 0.0D);
+        }
+        if (spec.smokeParticles()) {
+            level.sendParticles(ParticleTypes.LARGE_SMOKE, terrain.origin.getX() + 0.5D, terrain.origin.getY() - 0.6D, terrain.origin.getZ() + 0.5D, 14, spec.radius(), 0.4D, spec.radius(), 0.02D);
+        }
+
+        for (LivingEntity entity : level.getEntitiesOfClass(LivingEntity.class, area, LivingEntity::isAlive)) {
+            double localX = entity.getX() - (terrain.origin.getX() + 0.5D);
+            double localZ = entity.getZ() - (terrain.origin.getZ() + 0.5D);
+            boolean inHorizontal = Math.abs(localX) <= spec.radius() + 0.55D && Math.abs(localZ) <= spec.radius() + 0.55D;
+            if (!inHorizontal) {
+                continue;
+            }
+            if (entity instanceof ServerPlayer player && entity.getY() <= terrain.origin.getY() - 0.65D) {
+                Long next = terrain.riftDamageCooldown.getOrDefault(player.getUUID(), 0L);
+                if (next <= gameTime) {
+                    player.hurt(level.damageSources().fall(), 2.0F);
+                    terrain.riftDamageCooldown.put(player.getUUID(), gameTime + 40L);
+                }
+            }
+            if (entity instanceof Enemy) {
+                Vec3 away = entity.position().subtract(Vec3.atCenterOf(terrain.origin));
+                if (away.horizontalDistanceSqr() > 0.001D && entity.getY() >= terrain.origin.getY() - 0.25D) {
+                    Vec3 push = away.normalize().scale(0.08D);
+                    entity.push(push.x, 0.0D, push.z);
+                }
+            }
+            if (spec.slowEdges() && Math.max(Math.abs(localX), Math.abs(localZ)) >= spec.radius() - 0.6D) {
+                entity.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SLOWDOWN, 30, 0, true, false));
+            }
+        }
+    }
+
+    private static boolean isNearAny(Set<BlockPos> positions, Vec3 point, double radius) {
+        double radiusSqr = radius * radius;
+        for (BlockPos pos : positions) {
+            if (Vec3.atCenterOf(pos).distanceToSqr(point) <= radiusSqr) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private static void removeOwnerTerrains(UUID owner, net.minecraft.server.MinecraftServer server) {
+        if (server == null) {
+            return;
+        }
+        for (TemporaryTerrain terrain : new ArrayList<>(terrains.values())) {
+            if (terrain.owner.equals(owner)) {
+                rollbackTerrain(server.getLevel(terrain.dimension), terrain);
+            }
+        }
+    }
+
+    private static boolean canReplaceWithTemporary(ServerLevel level, BlockPos pos, BlockState state) {
+        return isSafeTerrainTarget(level, pos, state)
+            && (state.isAir() || state.canBeReplaced() || state.getCollisionShape(level, pos).isEmpty());
+    }
+
+    private static boolean canRemoveForRift(ServerLevel level, BlockPos pos, BlockState state) {
+        return isSafeTerrainTarget(level, pos, state) && !state.isAir();
+    }
+
+    private static boolean isSafeTerrainTarget(ServerLevel level, BlockPos pos, BlockState state) {
+        BlockEntity blockEntity = level.getBlockEntity(pos);
+        return blockEntity == null
+            && !state.is(Blocks.BEDROCK)
+            && !state.is(Blocks.OBSIDIAN)
+            && !state.is(Blocks.CRYING_OBSIDIAN)
+            && !state.is(Blocks.NETHER_PORTAL)
+            && !state.is(Blocks.END_PORTAL)
+            && !state.is(Blocks.END_PORTAL_FRAME)
+            && !state.is(Blocks.COMMAND_BLOCK)
+            && !state.is(Blocks.CHAIN_COMMAND_BLOCK)
+            && !state.is(Blocks.REPEATING_COMMAND_BLOCK)
+            && !state.is(Blocks.STRUCTURE_BLOCK)
+            && !state.is(Blocks.JIGSAW)
+            && !state.is(Blocks.BARRIER)
+            && !state.is(Blocks.REDSTONE_WIRE)
+            && !state.is(Blocks.REPEATER)
+            && !state.is(Blocks.COMPARATOR)
+            && !state.is(Blocks.REDSTONE_TORCH)
+            && !state.is(Blocks.REDSTONE_WALL_TORCH)
+            && !state.is(Blocks.LEVER);
+    }
+
+    private static BlockPos offset(BlockPos pos, Direction.Axis axis, int amount) {
+        return axis == Direction.Axis.X ? pos.offset(amount, 0, 0) : pos.offset(0, 0, amount);
+    }
+
+    private static BlockState mountainState(MountainSpec spec, int offset, int y) {
+        if (spec.glowing() && y == spec.height() - 1 && Math.abs(offset) <= 1) {
+            return Blocks.GLOWSTONE.defaultBlockState();
+        }
+        return spec.wallState();
+    }
+
     private static ServerPlayer findOwner(InkMark mark) {
         if (mark.owner() == null) {
             return null;
@@ -429,6 +759,30 @@ public final class WorldGlyphEvents {
         };
     }
 
+    private static MountainSpec mountainSpec(InkStaffTier tier) {
+        return switch (tier) {
+            case WOOD -> new MountainSpec(2, Blocks.STONE.defaultBlockState(), false, 0.0F, ticksSeconds(45));
+            case STONE -> new MountainSpec(3, Blocks.COBBLESTONE.defaultBlockState(), false, 0.0F, ticksMinutes(1));
+            case COPPER -> new MountainSpec(3, Blocks.MOSSY_COBBLESTONE.defaultBlockState(), false, 0.0F, ticksSeconds(90));
+            case IRON -> new MountainSpec(4, Blocks.STONE_BRICKS.defaultBlockState(), false, 0.0F, ticksMinutes(2));
+            case GOLD -> new MountainSpec(4, Blocks.STONE_BRICKS.defaultBlockState(), true, 0.0F, ticksSeconds(90));
+            case DIAMOND -> new MountainSpec(5, Blocks.DEEPSLATE_BRICKS.defaultBlockState(), false, 1.0F, ticksMinutes(3));
+            case NETHERITE -> new MountainSpec(5, Blocks.OBSIDIAN.defaultBlockState(), false, 1.5F, ticksMinutes(4));
+        };
+    }
+
+    private static RiftSpec riftSpec(InkStaffTier tier) {
+        return switch (tier) {
+            case WOOD -> new RiftSpec(1, false, false, false, false, ticksSeconds(30));
+            case STONE -> new RiftSpec(1, false, false, false, false, ticksSeconds(45));
+            case COPPER -> new RiftSpec(1, false, true, false, false, ticksMinutes(1));
+            case IRON -> new RiftSpec(1, false, true, true, false, ticksSeconds(90));
+            case GOLD -> new RiftSpec(2, true, true, true, false, ticksSeconds(75));
+            case DIAMOND -> new RiftSpec(2, false, true, true, false, ticksMinutes(2));
+            case NETHERITE -> new RiftSpec(2, false, true, true, true, ticksMinutes(3));
+        };
+    }
+
     private static ResourceLocation id(String path) {
         return ResourceLocation.fromNamespaceAndPath(Glyphbound.MOD_ID, path);
     }
@@ -448,5 +802,75 @@ public final class WorldGlyphEvents {
     }
 
     private record InkFieldState(UUID owner, ResourceKey<Level> dimension, InkStaffTier staffTier, long expiresAt) {
+    }
+
+    private record MountainSpec(int height, BlockState wallState, boolean glowing, float thornDamage, long durationTicks) {
+    }
+
+    private record RiftSpec(int radius, boolean edgeShallow, boolean inkParticles, boolean smokeParticles, boolean slowEdges, long durationTicks) {
+    }
+
+    private record TerrainBlockKey(ResourceKey<Level> dimension, BlockPos pos) {
+        private TerrainBlockKey {
+            pos = pos.immutable();
+        }
+    }
+
+    private record TerrainChange(BlockPos pos, BlockState original, BlockState temporary) {
+        private TerrainChange {
+            pos = pos.immutable();
+        }
+    }
+
+    private static final class TemporaryTerrain {
+        private final UUID id = UUID.randomUUID();
+        private final String word;
+        private final UUID owner;
+        private final ResourceKey<Level> dimension;
+        private final long applyAt;
+        private final long expiresAt;
+        private final BlockPos origin;
+        private final InkStaffTier staffTier;
+        private final Map<BlockPos, TerrainChange> changes = new LinkedHashMap<>();
+        private final Set<BlockPos> riftArea = new HashSet<>();
+        private final Map<UUID, Long> riftDamageCooldown = new HashMap<>();
+        private boolean applied;
+        private float thornDamage;
+        private RiftSpec riftSpec;
+
+        private TemporaryTerrain(String word, UUID owner, ResourceKey<Level> dimension, long applyAt, long expiresAt, BlockPos origin, InkStaffTier staffTier) {
+            this.word = word;
+            this.owner = owner;
+            this.dimension = dimension;
+            this.applyAt = applyAt;
+            this.expiresAt = expiresAt;
+            this.origin = origin.immutable();
+            this.staffTier = staffTier;
+        }
+
+        private void addChange(BlockPos pos, BlockState original, BlockState temporary) {
+            changes.put(pos.immutable(), new TerrainChange(pos, original, temporary));
+        }
+
+        private AABB bounds() {
+            if (changes.isEmpty()) {
+                return new AABB(origin);
+            }
+            int minX = Integer.MAX_VALUE;
+            int minY = Integer.MAX_VALUE;
+            int minZ = Integer.MAX_VALUE;
+            int maxX = Integer.MIN_VALUE;
+            int maxY = Integer.MIN_VALUE;
+            int maxZ = Integer.MIN_VALUE;
+            for (BlockPos pos : changes.keySet()) {
+                minX = Math.min(minX, pos.getX());
+                minY = Math.min(minY, pos.getY());
+                minZ = Math.min(minZ, pos.getZ());
+                maxX = Math.max(maxX, pos.getX());
+                maxY = Math.max(maxY, pos.getY());
+                maxZ = Math.max(maxZ, pos.getZ());
+            }
+            return new AABB(minX, minY, minZ, maxX + 1.0D, maxY + 1.0D, maxZ + 1.0D);
+        }
     }
 }
