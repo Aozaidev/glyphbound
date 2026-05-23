@@ -17,6 +17,10 @@ public final class GlyphboundWords {
         "入", "劫", "出"
     );
 
+    public static final Set<String> SEALS = Set.of(
+        "印"
+    );
+
     public static final Set<String> CLOSE_AFTER_RECOGNIZE = Set.of(
         "入", "劫", "出"
     );
@@ -29,7 +33,8 @@ public final class GlyphboundWords {
         "净",
         "力", "怒",
         "脉", "魄",
-        "入", "劫", "出"
+        "入", "劫", "出",
+        "印"
     );
 
     private GlyphboundWords() {
