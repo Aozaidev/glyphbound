@@ -44,6 +44,9 @@ world saved data
 - Every design must support counterplay, cost, decay, context, or risk.
 - Every design must say which `InkTarget` types it reads.
 - Every design must say which NeoForge or Minecraft hooks it probably needs.
+- Before implementing or changing any glyph that touches shared systems such as damage, death, attributes, hunger, movement, visibility, inventory, redstone, AI, or persistent state, follow `docs/system-interaction-workflow.md`.
+- Do not let shared-system behavior depend on incidental event-handler order. Define the pipeline, accumulation value, final applied value, expiry, stacking, and reset behavior first.
+- Any new custom state map, timer, cooldown, stack, delayed damage pool, or transient attribute modifier must be cleared by the relevant reset path, especially death/death clone/respawn/logout/server-stop for player state. Static process memory can survive switching saves in the same client session.
 
 ## Expected Design Output
 

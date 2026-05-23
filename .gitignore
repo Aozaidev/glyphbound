@@ -2,6 +2,7 @@
 .gradle/
 build/
 out/
+bin/
 
 # NeoForge run directories
 runs/
@@ -23,6 +24,8 @@ run/
 *.jar
 *.war
 *.ear
+*.hprof
+*.jfr
 hs_err_pid*
 replay_pid*
 
@@ -30,6 +33,7 @@ replay_pid*
 *.log
 logs/
 crash-reports/
+debug/
 
 # OS noise
 .DS_Store
@@ -43,3 +47,13 @@ desktop.ini
 
 # Windows reserved-device filename noise
 nul
+NUL
+
+# Temporary/editor noise
+*.tmp
+*.temp
+*.bak
+*.orig
+*.rej
+*.swp
+*~

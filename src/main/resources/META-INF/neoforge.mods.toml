@@ -31,3 +31,10 @@ type="required"
 versionRange="${aozainkmc_version_range}"
 ordering="AFTER"
 side="BOTH"
+
+[[dependencies.${mod_id}]]
+modId="patchouli"
+type="required"
+versionRange="${patchouli_version_range}"
+ordering="AFTER"
+side="BOTH"

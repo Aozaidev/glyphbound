@@ -26,6 +26,10 @@ base {
 
 repositories {
     mavenCentral()
+    maven {
+        name = "BlameJared"
+        url = "https://maven.blamejared.com"
+    }
 }
 
 java {
@@ -49,6 +53,8 @@ runs {
 dependencies {
     implementation "net.neoforged:neoforge:${project.neo_version}"
     compileOnly files("../aozainkmc/build/libs/aozainkmc-0.1.0-all.jar")
+    runtimeOnly files("../aozainkmc/build/libs/aozainkmc-0.1.0-all.jar")
+    compileOnly "vazkii.patchouli:Patchouli:1.21.1-93-NEOFORGE:api"
 }
 
 processResources {
@@ -63,7 +69,8 @@ processResources {
         mod_version: mod_version,
         mod_authors: mod_authors,
         mod_description: mod_description,
-        aozainkmc_version_range: aozainkmc_version_range
+        aozainkmc_version_range: aozainkmc_version_range,
+        patchouli_version_range: patchouli_version_range
     ]
     inputs.properties replaceProperties
 

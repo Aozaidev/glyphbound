@@ -2,7 +2,7 @@
 
 Glyphbound, display name `墨蕴·万象`, is the official gameplay addon workspace for Aozai Ink MC.
 
-This repository intentionally starts without implemented glyph effects. It exists to host the addon shell, design workflow, and agent instructions for producing effect specifications in batches before any implementation work begins.
+This repository hosts the addon shell, design workflow, and first gameplay implementation pass for handwritten glyph effects.
 
 ## Relationship To Aozai Ink MC
 
@@ -28,7 +28,7 @@ Implemented:
 NeoForge 1.21.1 addon shell
 Required dependency metadata for aozainkmc
 Agent design workflow
-No glyph effects
+身命卷 phase 001 body glyphs: 心 救 息 忍 坚 稳 隐 明 净 怒 脉
 ```
 
 Not implemented yet:
@@ -42,6 +42,7 @@ Dimensions
 Recipes
 Loot tables
 Progression systems
+Terrain/redstone/summon/dimension glyph modules
 ```
 
 ## Build
@@ -68,8 +69,8 @@ gradle build
 
 ## Design Workflow
 
-1. Give a low-cost agent one batch file from `docs/batches/`.
-2. Require the agent to output design specs only, using `docs/glyph-effect-spec-format.md`.
+1. Give a low-cost agent one batch assignment from `docs/batches/`.
+2. Require the agent to output Markdown design specs only, using `docs/glyph-effect-spec-format.md`.
 3. Do not let the agent write Java code, data packs, assets, or recipes in the first pass.
 4. Review the output with `docs/review-rubric.md`.
 5. Only approved specs become implementation tasks.

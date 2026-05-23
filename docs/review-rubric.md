@@ -15,6 +15,7 @@ Reject the design if it:
 - Needs a new framework when vanilla or NeoForge hooks are enough.
 - Has no cost, limit, decay, or counterplay.
 - Is impossible to test in a small MVP.
+- Touches a shared gameplay pipeline but does not define interaction order, accumulation values, expiry, and reset behavior.
 
 ## Strong Design Signals
 
@@ -40,6 +41,8 @@ How does it expire?
 How does a player notice it?
 How can a player misuse it?
 What is the smallest test case?
+If this touches damage/death/resources/state, what is the exact pipeline order?
+What clears all custom state on death, expiry, recast, or failure?
 ```
 
 ## Final Verdict Format
