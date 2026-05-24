@@ -1,1 +1,6 @@
-{"name": "战斗与世界","description": "墨斗场、渡劫突破，以及封印、墨染场、地形字。","icon": "minecraft:obsidian","sortnum": 3}
+{
+  "name": "第二波：世界压力",
+  "description": "主动触发的遭遇战与后续副本地基。",
+  "icon": "minecraft:obsidian",
+  "sortnum": 3
+}

@@ -1,1 +1,6 @@
-{"name": "入门","description": "怎么写字、认字、开阵，以及最基础的三条规则。","icon": "minecraft:ink_sac","sortnum": 0}
+{
+  "name": "入门",
+  "description": "写字、识别、施写阵和铭刻阵的基本规则。",
+  "icon": "minecraft:ink_sac",
+  "sortnum": 0
+}

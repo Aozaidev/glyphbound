@@ -1,1 +1,6 @@
-{"name": "魔杖","description": "你的笔。杖决定了字的强弱、时长和高级效果。","icon": "aozainkmc:ink_brush","sortnum": 1}
+{
+  "name": "魔杖",
+  "description": "魔杖决定字的规模、持续时间、上限和高级机制。",
+  "icon": "aozainkmc:ink_brush",
+  "sortnum": 1
+}

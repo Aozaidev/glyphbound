@@ -1,1 +1,6 @@
-{"name": "身命卷","description": "直接写在自己身上的字：加血、保命、硬扛、潜行、侦查、反打、死后牵装备。","icon": "minecraft:golden_apple","sortnum": 2}
+{
+  "name": "第一波：身命卷",
+  "description": "普通玩法里直接有用的身体字、保命字和战斗姿态。",
+  "icon": "minecraft:golden_apple",
+  "sortnum": 2
+}
