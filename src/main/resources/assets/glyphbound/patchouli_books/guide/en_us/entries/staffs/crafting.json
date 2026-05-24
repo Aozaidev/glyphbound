@@ -45,6 +45,11 @@
     },
     {
       "type": "patchouli:text",
+      "title": "Ink core repair",
+      "text": "You can also put $(l)ink cores$() in the second anvil slot. Each core repairs 25% of the stave's max durability, up to 4 cores per operation.$(br2)Ink cores repair durability only. They do not add momentum, transfer tribulation state, or change the first stave's name or progress."
+    },
+    {
+      "type": "patchouli:text",
       "title": "Tier feel",
       "text": "Wood is entry-level. Stone becomes steadier. Copper is the middle step. Iron is the workhorse. Gold leans toward burst. Diamond unlocks the full high-pressure playstyle. Netherite is the current top tier."
     },
