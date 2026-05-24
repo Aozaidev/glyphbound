@@ -1,7 +1,7 @@
 {
   "name": "执笔引",
-  "landing_text": "用手写汉字改变战斗、身体和世界规则。$(br2)这本书只记录当前已经稳定的核心玩法：魔杖、身命卷、墨斗场，以及每个字的实战用法。",
-  "version": 1,
+  "landing_text": "一本教你写字的书。（并不完全。）$(br2)这里只记已经能用的东西：怎么做魔杖、14个身体字怎么用、怎么打墨斗场和渡劫、怎么用封印和墨染场。",
+  "version": 2,
   "creative_tab": "minecraft:tools_and_utilities",
   "use_resource_pack": true,
   "show_progress": false,
