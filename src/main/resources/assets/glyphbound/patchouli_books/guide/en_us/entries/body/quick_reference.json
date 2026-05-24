@@ -1,23 +1,23 @@
 {
-  "name": "身命卷速查",
+  "name": "Body Glyph Quick Reference",
   "icon": "minecraft:book",
   "category": "glyphbound:body",
   "sortnum": 6,
   "pages": [
     {
       "type": "patchouli:text",
-      "title": "恢复与保险",
-      "text": "$(l)心$()：临时生命，上限约一排。$(br)$(l)命$()：低阶濒死锁血。$(br)$(l)救$()：高阶濒死金身，石杖起用。$(br)$(l)息$()：站定恢复，移动、受伤、攻击、右键会断。"
+      "title": "Recovery and insurance",
+      "text": "$(l)心$(): temporary health, capped at about one row.$(br)$(l)命$(): low-tier lethal hit save.$(br)$(l)救$(): stronger lethal hit invulnerability, stone stave and up.$(br)$(l)息$(): stand-still recovery; moving, taking damage, attacking, or right-clicking breaks it."
     },
     {
       "type": "patchouli:text",
-      "title": "承伤与稳定",
-      "text": "$(l)忍$()：把部分最终伤害转为墨伤。$(br)$(l)净$()：清负面，也清一部分墨伤。$(br)$(l)坚$()：站桩抗线，铁杖以上连续受击更稳。$(br)$(l)稳$()：削击退、削爆炸推动，高阶抵消大击退。"
+      "title": "Damage and stability",
+      "text": "$(l)忍$(): turns part of final damage into ink wound.$(br)$(l)净$(): clears negative effects and part of ink wound.$(br)$(l)坚$(): bracing defense; iron and above steadies under repeated hits.$(br)$(l)稳$(): reduces knockback and explosion push; high tiers cancel heavy knockback."
     },
     {
       "type": "patchouli:text",
-      "title": "侦查与反打",
-      "text": "$(l)隐$()：潜行脱战，攻击、右键、开箱、挖掘、放置会失效。$(br)$(l)明$()：看环境线索。$(br)$(l)脉$()：看生命强弱和方向。$(br)$(l)力$()：低阶受伤增攻。$(br)$(l)怒$()：钻石以上受伤增攻、减伤、冲击波。$(br)$(l)魄$()：死亡后牵回部分掉落。"
+      "title": "Scouting and counterplay",
+      "text": "$(l)隐$(): disengage with stealth; attacking, right-clicking, opening, mining, or placing breaks it.$(br)$(l)明$(): environmental hints.$(br)$(l)脉$(): life strength and direction.$(br)$(l)力$(): low-tier damage gain when hurt.$(br)$(l)怒$(): diamond+ damage gain, reduction, and shockwaves.$(br)$(l)魄$(): recover part of death drops."
     }
   ]
 }

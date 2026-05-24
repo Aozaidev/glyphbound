@@ -1,43 +1,43 @@
 {
-  "name": "印、泉、墨",
+  "name": "Seal, Spring, Ink",
   "icon": "minecraft:ink_sac",
   "category": "glyphbound:events",
   "sortnum": 3,
   "pages": [
     {
       "type": "patchouli:text",
-      "title": "印：方碑封印",
-      "text": "写 $(l)印$() 后，法阵会收起并让你右键选择一个方块。选中后，施写阵会重新展开，再写第二个字。$(br2)当前可入印：$(l)净$()、$(l)泉$()、$(l)息$()。写错或写了未接入的字，会直接提示并结束这次封印。"
+      "title": "印: seal pillar",
+      "text": "After writing $(l)印$(), the circle closes and asks you to right-click a block. Once selected, the self-casting circle opens again for the second glyph.$(br2)Currently sealable: $(l)净$(), $(l)泉$(), and $(l)息$(). If you write the wrong glyph or one that is not connected yet, the seal attempt ends with a message."
     },
     {
       "type": "patchouli:text",
-      "title": "净印",
-      "text": "$(l)净印$() 是持续净化方碑。玩家进入范围时清除 1 个负面效果；同一玩家对同一方碑 60 秒内只触发一次。$(br2)它不处理墨伤。墨伤还是要直接写 $(l)净$()。"
+      "title": "净 seal",
+      "text": "$(l)净 seal$() is a standing cleanse pillar. When you enter its range, it clears 1 negative effect. The same pillar can trigger for you only once every 60 seconds.$(br2)It does not handle ink wound. Write $(l)净$() directly for that."
     },
     {
       "type": "patchouli:text",
-      "title": "泉印",
-      "text": "$(l)泉$() 直接写是瞬间回血，不给饱食度。用铭刻阵写在方块上，会治疗附近玩家。$(br2)$(l)泉印$() 是区域灵泉，范围内玩家会按间隔自动回血，不需要站定。魔杖越高，范围越大，触发越快。"
+      "title": "泉 seal",
+      "text": "Writing $(l)泉$() directly gives an instant heal, not saturation. Writing it with the inscription circle heals near the marked block.$(br2)$(l)泉 seal$() becomes an area spring: while inside, you heal automatically on an interval without standing still. Better staves increase range and speed."
     },
     {
       "type": "patchouli:text",
-      "title": "息印",
-      "text": "$(l)息印$() 更像临时营地。玩家在范围内站定 3 秒后，开始获得小额回血和饱食恢复。$(br2)移动会重新计时；离开方碑范围后停止。它适合战后整理，不适合边跑边打。"
+      "title": "息 seal",
+      "text": "$(l)息 seal$() is more like a temporary camp. Stand still inside its range for 3 seconds, then you start receiving small health and hunger recovery.$(br2)Moving resets the timer. Leaving the range stops it. It is for post-fight cleanup, not healing while running."
     },
     {
       "type": "patchouli:text",
-      "title": "墨染场",
-      "text": "直接写 $(l)墨$()，会展开一个跟随你的墨染场。你会看见黑白墨色滤镜，这是施法者承担的代价。$(br2)场内你的输出和治疗都会明显提高，但写其他字会额外磨损魔杖。"
+      "title": "Ink field",
+      "text": "Write $(l)墨$() directly to unfold an ink field around you. The black-and-white ink filter is the cost paid by the caster.$(br2)Inside the field, your damage and healing are much stronger, but writing other glyphs wears the stave faster."
     },
     {
       "type": "patchouli:text",
-      "title": "墨染代价",
-      "text": "墨染场内怪物会变硬、打得更痛、跑得更快，并会更主动地朝你靠近。领域还会在边缘补充怪物，直到附近敌人已经足够多。$(br2)场内击杀怪物有概率掉落 $(l)墨核$()。外圈黑色粒子就是领域边界。"
+      "title": "Ink field cost",
+      "text": "Monsters inside the field become tougher, hit harder, move faster, and more actively close in. The field also supplements monsters near its edge until enough enemies are nearby.$(br2)Kills inside the field can drop $(l)ink cores$(). The black particle ring marks the boundary."
     },
     {
       "type": "patchouli:text",
-      "title": "清理规则",
-      "text": "同一玩家同一维度最多保留 3 个印方碑，超过后最旧的会消散。方碑所在方块被挖掉，封印也会结束。$(br2)死亡、退出游戏、切换维度时，印方碑和墨染场都会清理。"
+      "title": "Cleanup",
+      "text": "You can keep at most 3 seal pillars in the same dimension. If you exceed the limit, the oldest one fades. Breaking the pillar's block ends the seal.$(br2)Death, leaving the game, or changing dimensions clears seals and ink fields."
     }
   ]
 }

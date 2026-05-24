@@ -1,23 +1,23 @@
 {
-  "name": "忍、净",
+  "name": "Endure and Cleanse",
   "icon": "minecraft:echo_shard",
   "category": "glyphbound:body",
   "sortnum": 1,
   "pages": [
     {
       "type": "patchouli:text",
-      "title": "忍：延迟伤害",
-      "text": "$(l)忍$() 把原版护甲、抗性等结算后的最终伤害，转移一部分到墨伤池。$(br2)墨伤就是延迟结算的伤害，表现为黑色心形提示；你当下只吃剩余部分。2 秒内没有继续受伤，墨伤才开始扣血；继续挨打会继续积攒并推迟结算。"
+      "title": "忍: delay damage",
+      "text": "$(l)忍$() takes final damage after vanilla armor, resistance, and similar reductions, then moves part of it into an ink wound pool.$(br2)Ink wound is delayed damage, shown with black-heart feedback. You only take the remaining portion immediately. If you go 2 seconds without another hit, the pool starts paying out; more hits keep adding to it and push the payout back."
     },
     {
       "type": "patchouli:text",
-      "title": "忍的分档",
-      "text": "忍通常持续很久，适合进洞或挑战前先写。$(br2)木杖只拖四分之一左右的伤害，铁杖能拖一半多，下界合金能拖大半。$(br2)墨伤池也有上限，低阶杖不能无限拖债。"
+      "title": "Tier feel",
+      "text": "忍 lasts a long time, so it is good to write before caves or challenges.$(br2)Wood delays about a quarter of the damage. Iron delays more than half. Netherite delays most of it.$(br2)The ink wound pool has a cap, so weak staves cannot delay infinite debt."
     },
     {
       "type": "patchouli:text",
-      "title": "净：整理墨伤",
-      "text": "$(l)净$() 清负面效果，也抵消固定量墨伤。木杖清 4 点墨伤和 1 个负面效果；钻石清 18 点墨伤和最多 4 个负面效果；下界合金清 22 点和最多 5 个。$(br2)它不是一次清空所有压力，而是“能写就能继续抵”。打完一波后，净是处理忍和救之后残余墨伤的核心手段。"
+      "title": "净: clean up pressure",
+      "text": "$(l)净$() clears negative effects and removes a fixed amount of ink wound. Wood clears 4 ink wound and 1 negative effect; diamond clears 18 and up to 4 effects; netherite clears 22 and up to 5.$(br2)It is not always a full reset. It is the tool you keep writing when pressure remains after 忍 or 救."
     }
   ]
 }

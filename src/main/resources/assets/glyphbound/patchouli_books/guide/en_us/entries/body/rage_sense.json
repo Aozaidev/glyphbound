@@ -1,5 +1,5 @@
 {
-  "name": "力、怒",
+  "name": "Force and Rage",
   "icon": "minecraft:netherite_sword",
   "category": "glyphbound:body",
   "sortnum": 3,
@@ -7,17 +7,17 @@
     {
       "type": "patchouli:text",
       "title": "力 / 怒",
-      "text": "$(l)力$() 是低阶反打字，最终受伤越多，攻击越高。木杖最高 +20% 攻击，铁杖最高 +50%，钻石以上最高 +60%。$(br2)力到钻石以上会有小冲击，但不提供怒的减伤。"
+      "text": "$(l)力$() is the low-tier counterattack glyph. The more final damage you take, the more attack power you gain. Wood caps at +20%, iron at +50%, diamond and above at +60%.$(br2)At diamond and above, 力 gains a small shockwave, but it does not provide the damage reduction that 怒 does."
     },
     {
       "type": "patchouli:text",
-      "title": "怒：高阶反打",
-      "text": "$(l)怒$() 需要钻石杖或下界合金杖才能稳定施放。$(br2)它统计所有前置减伤后的最终受伤：每 1 点最终伤害增加 1% 减伤，钻石最高 65%，下界合金最高 70%；每 5 点最终伤害增加攻击，钻石最高 +125%，下界合金最高 +150%。"
+      "title": "怒: high-tier counter",
+      "text": "$(l)怒$() needs a diamond or netherite stave. It tracks final damage after all earlier reductions.$(br2)Every 1 point of final damage adds 1% damage reduction, capped at 65% on diamond and 70% on netherite. Every 5 points adds attack power, capped at +125% on diamond and +150% on netherite."
     },
     {
       "type": "patchouli:text",
-      "title": "怒的冲击波",
-      "text": "怒每受到 10 次来自实体的攻击，释放一次冲击波。半径 4 格，推开周围生物并造成少量魔法伤害。$(br2)怒到期或重新写怒时，会重新开始积累。死亡、退出游戏或换存档也会清空。"
+      "title": "Shockwave",
+      "text": "怒 releases a shockwave every 10 attacks from entities. It pushes nearby creatures within 4 blocks and deals a small amount of magic damage.$(br2)When 怒 expires or is written again, its damage reduction and attack bonuses reset. Death, leaving the game, or switching saves clears it too."
     }
   ]
 }

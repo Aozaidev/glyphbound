@@ -1,4 +1,6 @@
 {
   "modmenu.nameTranslation.glyphbound": "Glyphbound",
-  "item.glyphbound.ink_core": "Ink Core"
+  "item.glyphbound.ink_core": "Ink Core",
+  "book.glyphbound.guide.name": "Brushbound Primer",
+  "book.glyphbound.guide.landing_text": "A field guide to writing glyphs. Not all of them.$(br2)This book covers what currently works: crafting staves, the 14 body glyphs, Ink Arenas and tribulations, seals, ink fields, and terrain glyphs."
 }

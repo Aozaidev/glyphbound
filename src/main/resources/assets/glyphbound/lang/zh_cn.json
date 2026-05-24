@@ -1,4 +1,6 @@
 {
   "modmenu.nameTranslation.glyphbound": "墨蕴·万象",
-  "item.glyphbound.ink_core": "墨核"
+  "item.glyphbound.ink_core": "墨核",
+  "book.glyphbound.guide.name": "执笔引",
+  "book.glyphbound.guide.landing_text": "一本教你写字的书。（并不完全。）$(br2)这里只记已经能用的东西：怎么做魔杖、14个身体字怎么用、怎么打墨斗场和渡劫、怎么用封印和墨染场。"
 }

@@ -1,28 +1,28 @@
 {
-  "name": "山、裂",
+  "name": "Mountain and Rift",
   "icon": "minecraft:deepslate_bricks",
   "category": "glyphbound:events",
   "sortnum": 4,
   "pages": [
     {
       "type": "patchouli:text",
-      "title": "铭刻地形",
-      "text": "$(l)山$() 和 $(l)裂$() 都用铭刻阵书写。按 $(l)V$() 选好世界位置后写字，它们会直接改变目标附近地形。$(br2)它们都是临时地形，到期、死亡、退出或被破坏时会回滚，不会长期污染存档。"
+      "title": "Inscribed terrain",
+      "text": "$(l)山$() and $(l)裂$() both use the inscription circle. Press $(l)V$(), choose a world position, then write the glyph to reshape nearby terrain.$(br2)Both are temporary. They roll back on expiry, death, logout, or destruction, so they do not permanently pollute the save."
     },
     {
       "type": "patchouli:text",
-      "title": "山：临时掩体",
-      "text": "$(l)山$() 会在目标位置立起 5 格长的横墙，方向按你当时面对的方向决定。$(br2)木杖是矮墙，铁杖开始足够挡怪，钻石和下界合金带荆棘，会刺伤贴近墙体的怪物。金杖山顶会发光。"
+      "title": "山: temporary cover",
+      "text": "$(l)山$() raises a 5-block-wide wall at the target. Its direction follows the way you were facing.$(br2)Wood makes a low ridge. Iron and above blocks mobs properly. Diamond and netherite add thorns that hurt enemies touching the wall. Gold makes the top glow."
     },
     {
       "type": "patchouli:text",
-      "title": "裂：塌陷陷阱",
-      "text": "$(l)裂$() 写完 1 秒后生效，目标地面会塌出裂隙。低阶是 3×3，两格深；金杖以上扩大到 5×5。$(br2)落进去会吃 1 心跌落伤害。怪物会被裂隙边缘轻微推离，下界合金裂隙还会让边缘实体缓慢。"
+      "title": "裂: collapse trap",
+      "text": "$(l)裂$() triggers 1 second after writing, collapsing the target ground into a rift. Low tiers make a 3x3 pit, 2 blocks deep; gold and above expands to 5x5.$(br2)Falling in costs 1 heart. Monsters are lightly pushed away from the rim, and netherite rifts slow entities near the edge."
     },
     {
       "type": "patchouli:text",
-      "title": "保护规则",
-      "text": "山和裂不会覆盖或破坏容器、红石核心、传送门、基岩、黑曜石、命令方块等关键方块。$(br2)如果目标区域不适合改写，会直接失败并提示。"
+      "title": "Protection rules",
+      "text": "山 and 裂 will not overwrite or destroy key blocks such as containers, redstone cores, portals, bedrock, obsidian, or command blocks.$(br2)If the target area is not safe to rewrite, the glyph fails with a message instead."
     }
   ]
 }

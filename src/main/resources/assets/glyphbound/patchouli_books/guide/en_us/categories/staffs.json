@@ -1,6 +1,6 @@
 {
-  "name": "魔杖",
-  "description": "魔杖决定字的规模、持续时间、上限和高级机制。",
+  "name": "Staves",
+  "description": "Your brush. A stave decides a glyph's scale, duration, cap, and advanced rules.",
   "icon": "aozainkmc:ink_brush",
   "sortnum": 1
 }

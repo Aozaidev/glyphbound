@@ -1,5 +1,5 @@
 {
-  "name": "魔杖合成",
+  "name": "Crafting Staves",
   "icon": "aozainkmc:ink_brush",
   "category": "glyphbound:staffs",
   "sortnum": 0,
@@ -7,13 +7,13 @@
     {
       "type": "patchouli:crafting",
       "recipe": "aozainkmc:ink_brush",
-      "title": "木杖",
-      "text": "短杖配方是斜向 2 格：右上木板，左下木棍。$(br)它不是原版工具那种长柄配方。"
+      "title": "Wooden stave",
+      "text": "The basic stave is a short diagonal recipe: plank in the upper-right, stick in the lower-left.$(br)It is not the long handle shape used by vanilla tools."
     },
     {
       "type": "patchouli:text",
-      "title": "2x2 摆放",
-      "text": "工作台或背包 2x2 均可：$(br2)$(l)空  木板$()$(br)$(l)木棍 空$()$(br2)如果你摆成竖直木棍加木板，那不是本模组魔杖。"
+      "title": "2x2 layout",
+      "text": "A crafting table or your inventory grid both work:$(br2)$(l)Empty  Plank$()$(br)$(l)Stick   Empty$()$(br2)If you place a vertical stick and plank, that is not this mod's stave recipe."
     },
     {
       "type": "patchouli:image",
@@ -21,42 +21,42 @@
         "glyphbound:textures/gui/guide/staff_layout.png"
       ],
       "border": true,
-      "text": "短杖是哈利波特式短杖，不是原版工具柄。"
+      "text": "Think short wand, not vanilla tool handle."
     },
     {
       "type": "patchouli:text",
-      "title": "升级形状",
-      "text": "升级也沿用短杖形状：右上放进阶材料，左下放已渡劫的魔杖。$(br2)只有笔势满并通过劫的魔杖，才能合成下一阶。"
+      "title": "Upgrade shape",
+      "text": "Upgrades use the same diagonal shape: next-tier material in the upper-right, tribulation-cleared stave in the lower-left.$(br2)Only a stave with full brush momentum and a cleared $(l)劫$() can upgrade."
     },
     {
       "type": "patchouli:text",
-      "title": "笔势",
-      "text": "成功写出已实装的有效字，手持魔杖会获得 1 点笔势。未实装字会提示“此字未通”，不会生效、涨笔势或扣耐久。$(br2)写 $(l)入$() 完成墨斗场后，会额外增加一段笔势。魔杖提示出现“境界已满”时，就可以写 $(l)劫$()。"
+      "title": "Brush momentum",
+      "text": "Every successful implemented glyph adds 1 brush momentum to the stave you are holding. Unimplemented glyphs say “Glyph unopened” and do not cast, gain momentum, or cost durability.$(br2)Clearing an $(l)入$() Ink Arena adds a larger chunk. When the stave says its realm is full, you can write $(l)劫$()."
     },
     {
       "type": "patchouli:text",
-      "title": "渡劫后升级",
-      "text": "写 $(l)劫$() 并打完渡劫场后，当前魔杖会获得“可升级”标记。$(br2)再按短杖形状合成：石料、铜锭、铁锭、金锭、钻石、下界合金锭依次对应下一阶。升级后的新魔杖笔势清零。"
+      "title": "After tribulation",
+      "text": "After writing $(l)劫$() and clearing the trial, the current stave gains an upgrade-ready mark.$(br2)Then craft with the short-stave shape: stone, copper ingot, iron ingot, gold ingot, diamond, and netherite ingot each move to the next tier. The new stave starts with zero momentum."
     },
     {
       "type": "patchouli:text",
-      "title": "铁砧修复",
-      "text": "铁砧第一格放要保留的魔杖，第二格放同阶魔杖。输出会修复第一格魔杖，并保留第一格的笔势和渡劫状态。$(br2)第二格只是消耗品，它的笔势、名字和其他数据不会继承。"
+      "title": "Anvil repair",
+      "text": "Put the stave you want to keep in the first anvil slot, and another same-tier stave in the second slot. The output repairs the first stave and keeps its momentum and tribulation state.$(br2)The second stave is only material. Its name, momentum, and other data do not transfer."
     },
     {
       "type": "patchouli:text",
-      "title": "等级感觉",
-      "text": "木杖是入门档；石杖开始稳定；铜杖进入中阶；铁杖适合长期战斗；金杖更偏爆发；钻石杖解锁完整高压玩法；下界合金杖是当前最高档。"
+      "title": "Tier feel",
+      "text": "Wood is entry-level. Stone becomes steadier. Copper is the middle step. Iron is the workhorse. Gold leans toward burst. Diamond unlocks the full high-pressure playstyle. Netherite is the current top tier."
     },
     {
       "type": "patchouli:text",
-      "title": "卡住时",
-      "text": "如果配方没有结果，通常是三件事：魔杖笔势没满、还没通过劫、或者摆放不是右上材料左下魔杖。$(br2)如果只是耐久不够，用铁砧同阶修复，不需要重新渡劫。"
+      "title": "If crafting fails",
+      "text": "If the recipe has no result, one of three things is usually wrong: the stave momentum is not full, $(l)劫$() has not been cleared, or the material/stave positions are swapped.$(br2)If durability is the only problem, repair it on an anvil with a same-tier stave. You do not need to repeat tribulation."
     },
     {
       "type": "patchouli:text",
-      "title": "选杖速查",
-      "text": "日常保命：木杖到铜杖已经够用。$(br2)下矿和普通战斗：铁杖最稳。$(br2)打墨斗场和高压挑战：钻石杖起步更舒服。$(br2)想把一个字写到最完整：用下界合金杖。"
+      "title": "Which stave?",
+      "text": "Daily survival: wood to copper is enough.$(br2)Caving and normal combat: iron is the most comfortable.$(br2)Ink Arenas and high-pressure fights: diamond starts to feel right.$(br2)To write a glyph at its fullest: use netherite."
     }
   ]
 }

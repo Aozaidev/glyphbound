@@ -1,23 +1,23 @@
 {
-  "name": "战斗前怎么写",
+  "name": "Combat Routine",
   "icon": "minecraft:iron_chestplate",
   "category": "glyphbound:body",
   "sortnum": 5,
   "pages": [
     {
       "type": "patchouli:text",
-      "title": "进洞前",
-      "text": "$(l)心$() 先垫容错，$(l)命$() 或 $(l)救$() 放一次濒死保险。$(br2)如果你准备吃爆发伤害，再写 $(l)忍$()，但记得背后要有 $(l)净$() 或安全时间处理墨伤。$(br2)最后用 $(l)明$() / $(l)脉$() 看附近危险。"
+      "title": "Before caving",
+      "text": "Start with $(l)心$() for room to make mistakes, then add $(l)命$() or $(l)救$() as death insurance.$(br2)If you expect burst damage, write $(l)忍$(), but make sure you have $(l)净$() or a safe window to handle the ink wound afterward.$(br2)Finish with $(l)明$() or $(l)脉$() to check nearby danger."
     },
     {
       "type": "patchouli:text",
-      "title": "被发现后",
-      "text": "想站桩就写 $(l)坚$()，怕击退和爆炸就写 $(l)稳$()。$(br2)低阶输出用 $(l)力$()，钻石以上再考虑 $(l)怒$()。怒吃的是最终受伤，所以忍、护甲、抗性等先结算，怒再统计真正打到你身上的数值。"
+      "title": "Once spotted",
+      "text": "If you want to hold your ground, write $(l)坚$(). If knockback and explosions are the problem, write $(l)稳$().$(br2)Use $(l)力$() for low-tier damage. Switch to $(l)怒$() at diamond and above. 怒 counts final damage, so 忍, armor, resistance, and similar effects happen before rage records what actually reached you."
     },
     {
       "type": "patchouli:text",
-      "title": "脱战后",
-      "text": "先确认没有怪贴脸，再写 $(l)息$() 站定恢复。$(br2)如果身上还有墨伤或负面效果，写 $(l)净$()。如果刚死过，回到安全处写 $(l)魄$()，尽快把死亡现场仍存在的物品牵回来。"
+      "title": "After the fight",
+      "text": "Make sure nothing is in your face, then write $(l)息$() and stand still to recover.$(br2)If you still have ink wound or negative effects, write $(l)净$(). If you recently died, return to safety and write $(l)魄$() quickly, before your dropped items vanish."
     }
   ]
 }

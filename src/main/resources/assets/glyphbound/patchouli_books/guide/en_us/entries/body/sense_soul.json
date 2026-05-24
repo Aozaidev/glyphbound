@@ -1,28 +1,28 @@
 {
-  "name": "明、脉、魄",
+  "name": "Sight, Pulse, Soul",
   "icon": "minecraft:ender_eye",
   "category": "glyphbound:body",
   "sortnum": 4,
   "pages": [
     {
       "type": "patchouli:text",
-      "title": "明：环境线索",
-      "text": "$(l)明$() 看环境线索。木杖主要提示黑暗和少量危险；石杖开始提示容器；铜杖开始提示矿物；铁杖以上会显示更完整的危险、容器、矿物和陷阱线索。$(br2)明不会给精确透视坐标，它是探索提示，不是小地图。"
+      "title": "明: environmental hints",
+      "text": "$(l)明$() reads the environment. Wood mostly reports darkness and a little danger. Stone starts reporting containers. Copper starts reporting ores. Iron and above gives more complete hints for danger, containers, ores, and traps.$(br2)It does not give exact wallhack coordinates. It is a clue, not a minimap."
     },
     {
       "type": "patchouli:text",
-      "title": "脉：生命感知",
-      "text": "$(l)脉$() 看附近生命强弱和方向。木杖半径 8 格，只给很粗略的动静；铜杖半径 16 格；钻石半径 24 格；下界合金半径 28 格。$(br2)魔杖越高，描述越接近数量、强度和方向。"
+      "title": "脉: life sense",
+      "text": "$(l)脉$() senses nearby life, strength, and direction. Wood reaches 8 blocks and only gives rough movement. Copper reaches 16. Diamond reaches 24. Netherite reaches 28.$(br2)Better staves make the report closer to actual count, strength, and direction."
     },
     {
       "type": "patchouli:text",
-      "title": "魄：死亡回收",
-      "text": "$(l)魄$() 在死亡后 10 分钟内可用。它从仍存在的死亡掉落中牵回一部分物品和经验。$(br2)规则是先抽物品类别，再抽该类别内数量；牵回物会从死亡现场扣掉，不会复制。"
+      "title": "魄: death recovery",
+      "text": "$(l)魄$() can be written within 10 minutes after death. It pulls back part of the still-existing dropped items and experience from your death site.$(br2)It rolls item categories first, then rolls amounts within each category. Recovered items are removed from the death site, so it does not duplicate anything."
     },
     {
       "type": "patchouli:text",
-      "title": "魄的比例",
-      "text": "木杖约牵回 20% 类别、每类 20% 数量；铁杖约 50%；钻石约 70%；下界合金约 80%。$(br2)例如木板、石剑、火把会先按物品种类分组，再分别抽每组里的数量。"
+      "title": "Recovery ratio",
+      "text": "Wood recovers about 20% of item categories and 20% of each chosen category. Iron is about 50%. Diamond is about 70%. Netherite is about 80%.$(br2)For example, planks, a stone sword, and torches are grouped by item type first, then each selected group rolls its own amount."
     }
   ]
 }

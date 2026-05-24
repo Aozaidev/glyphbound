@@ -1,33 +1,33 @@
 {
-  "name": "劫：渡劫突破",
+  "name": "劫: Tribulation",
   "icon": "minecraft:lightning_rod",
   "category": "glyphbound:events",
   "sortnum": 1,
   "pages": [
     {
       "type": "patchouli:text",
-      "title": "用途",
-      "text": "$(l)劫$() 是魔杖升阶前的突破试炼。$(br2)平时写字会让手持魔杖积累笔势；墨斗场入胜利后也会给一段笔势。魔杖提示境界已满时，写劫就能开始渡劫。"
+      "title": "Purpose",
+      "text": "$(l)劫$() is the breakthrough trial before a stave can upgrade.$(br2)Normal successful glyphs add brush momentum to the held stave. Winning an $(l)入$() Ink Arena adds a larger chunk. When the stave says its realm is full, write 劫 to begin tribulation."
     },
     {
       "type": "patchouli:text",
-      "title": "场地",
-      "text": "劫会生成比入更大的空中竞技场：中心仍是黑曜石平台，外圈深板岩逐圈扩展，围墙更高。$(br2)它复用墨斗场规则，但波次更长，精英和首领更凶。"
+      "title": "Arena",
+      "text": "劫 creates a harsher aerial arena than 入: the center is still obsidian, the outer deepslate expands in rings, and the walls rise higher.$(br2)It reuses Ink Arena rules, but the waves are longer and elites and bosses hit harder."
     },
     {
       "type": "patchouli:text",
-      "title": "胜利",
-      "text": "杀完所有波次后，当前魔杖获得“可升级”标记。你可以先捡掉落物，再写 $(l)出$() 离开。$(br2)离开后按短杖升级形状合成下一阶魔杖。"
+      "title": "Victory",
+      "text": "After all waves are cleared, the current stave gains an upgrade-ready mark. You can pick up drops first, then write $(l)出$() to leave.$(br2)After leaving, use the short-stave upgrade shape to craft the next tier."
     },
     {
       "type": "patchouli:text",
-      "title": "失败",
-      "text": "渡劫失败不会毁掉魔杖，也不会给很长惩罚。$(br2)它只会让当前魔杖的笔势保留一半，奇数向上取整。补回笔势后可以再次尝试。"
+      "title": "Failure",
+      "text": "Failing tribulation does not destroy the stave and does not lock you out for long.$(br2)It only halves the current stave's brush momentum, rounding odd values up. Refill momentum and try again."
     },
     {
       "type": "patchouli:text",
-      "title": "建议",
-      "text": "劫比入更适合先写一套身命卷：心垫血，忍拆爆发，净处理墨伤，稳站住，怒负责反打。$(br2)它不是刷材料的日常场，而是魔杖成长的门槛。"
+      "title": "Advice",
+      "text": "劫 is rough enough that a body glyph setup matters: 心 for health, 忍 to split burst damage, 净 to clean ink wound, 稳 to hold position, and 怒 to strike back.$(br2)It is not a daily farming arena. It is the gate for stave growth."
     }
   ]
 }
