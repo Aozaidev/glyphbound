@@ -5,8 +5,8 @@ import com.aozainkmc.api.InkStaffProgress;
 import com.aozainkmc.api.InkStaffMetadata;
 import com.aozainkmc.api.InkStaffTier;
 import com.aozainkmc.api.InkTargetType;
-import com.aozainkmc.core.AozaiInkItems;
-import com.aozainkmc.core.event.InkMarkAttachedEvent;
+import com.aozainkmc.api.InkStaffs;
+import com.aozainkmc.api.event.InkMarkAttachedEvent;
 import com.glyphbound.Glyphbound;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -182,7 +182,7 @@ public final class CalamityGlyphEvents {
         }
 
         ItemStack staff = heldStaff(player);
-        InkStaffTier tier = AozaiInkItems.staffTier(staff).orElse(null);
+        InkStaffTier tier = InkStaffs.tier(staff).orElse(null);
         if (tier == null) {
             player.displayClientMessage(Component.literal("劫: 需要手持魔杖"), true);
             return;
@@ -216,12 +216,12 @@ public final class CalamityGlyphEvents {
 
     private static ItemStack heldStaff(ServerPlayer player) {
         ItemStack stack = player.getMainHandItem();
-        return AozaiInkItems.isInkStaff(stack) ? stack : player.getOffhandItem();
+        return InkStaffs.isStaff(stack) ? stack : player.getOffhandItem();
     }
 
     private static UUID matchingHeldStaffId(ServerPlayer player, InkStaffTier tier) {
         ItemStack staff = heldStaff(player);
-        if (AozaiInkItems.staffTier(staff).orElse(null) != tier) {
+        if (InkStaffs.tier(staff).orElse(null) != tier) {
             return null;
         }
         return InkStaffProgress.ensureInstanceId(staff);
@@ -711,7 +711,7 @@ public final class CalamityGlyphEvents {
             restorePlayer(player, false);
             if (spec.kind() == ChallengeKind.TRIBULATION) {
                 ItemStack staff = findStaffById(player, staffId);
-                if (!staff.isEmpty() && AozaiInkItems.staffTier(staff).orElse(null) == spec.tier()) {
+                if (!staff.isEmpty() && InkStaffs.tier(staff).orElse(null) == spec.tier()) {
                     InkStaffProgress.halveProgressRoundUp(staff);
                 }
             }
@@ -736,7 +736,7 @@ public final class CalamityGlyphEvents {
         private void completeChallenge(ServerPlayer player) {
             if (spec.kind() == ChallengeKind.TRIBULATION) {
                 ItemStack staff = findStaffById(player, staffId);
-                if (!staff.isEmpty() && AozaiInkItems.staffTier(staff).orElse(null) == spec.tier()) {
+                if (!staff.isEmpty() && InkStaffs.tier(staff).orElse(null) == spec.tier()) {
                     InkStaffProgress.setBreakthroughReady(staff, true);
                     player.displayClientMessage(Component.literal("劫: 渡劫成功，此杖可升级"), true);
                 } else {
@@ -749,7 +749,7 @@ public final class CalamityGlyphEvents {
             giveRewards(player);
             ItemStack staff = findStaffById(player, staffId);
             if (!staff.isEmpty()
-                && AozaiInkItems.staffTier(staff).orElse(null) == spec.tier()
+                && InkStaffs.tier(staff).orElse(null) == spec.tier()
                 && InkStaffProgress.addProgress(staff, spec.tier(), spec.entryProgressReward())) {
                 player.displayClientMessage(Component.literal("魔杖境界已满，可写「劫」"), true);
             }

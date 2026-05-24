@@ -6,7 +6,7 @@ import com.aozainkmc.api.InkStaffMetadata;
 import com.aozainkmc.api.InkStaffTier;
 import com.aozainkmc.api.InkTarget;
 import com.aozainkmc.api.InkTargetType;
-import com.aozainkmc.core.event.InkMarkAttachedEvent;
+import com.aozainkmc.api.event.InkMarkAttachedEvent;
 import com.glyphbound.Glyphbound;
 import com.glyphbound.core.GlyphAttributes;
 import com.glyphbound.core.GlyphboundWords;
