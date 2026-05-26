@@ -1,23 +1,23 @@
 {
-  "name": "Combat Routine",
-  "icon": "minecraft:iron_chestplate",
-  "category": "glyphbound:body",
-  "sortnum": 5,
+  "name": "Combat Prep",
+  "icon": "minecraft:shield",
+  "category": "glyphbound:combos",
+  "sortnum": 0,
   "pages": [
     {
       "type": "patchouli:text",
       "title": "Before caving",
-      "text": "Start with $(l)心$() for room to make mistakes, then add $(l)命$() or $(l)救$() as death insurance.$(br2)If you expect burst damage, write $(l)忍$(), but make sure you have $(l)净$() or a safe window to handle the ink wound afterward.$(br2)Finish with $(l)明$() or $(l)脉$() to check nearby danger."
+      "text": "$(l)心 → 明/脉 → 命 or 忍$()$(br2)心 gives margin. 明 and 脉 tell you whether the area is worth entering. 命 handles accidental lethal hits; 忍 handles burst damage."
     },
     {
       "type": "patchouli:text",
-      "title": "Once spotted",
-      "text": "If you want to hold your ground, write $(l)坚$(). If knockback and explosions are the problem, write $(l)稳$().$(br2)Use $(l)力$() for low-tier damage. Switch to $(l)怒$() at diamond and above. 怒 counts final damage, so 忍, armor, resistance, and similar effects happen before rage records what actually reached you."
+      "title": "When surrounded",
+      "text": "Hold position: $(l)坚 + 稳$().$(br)Split burst: $(l)忍$().$(br)Clean debt: $(l)净$().$(br)Low-tier counter: $(l)力$(). Use $(l)怒$() only once you have diamond or above."
     },
     {
       "type": "patchouli:text",
       "title": "After the fight",
-      "text": "Make sure nothing is in your face, then write $(l)息$() and stand still to recover.$(br2)If you still have ink wound or negative effects, write $(l)净$(). If you recently died, return to safety and write $(l)魄$() quickly, before your dropped items vanish."
+      "text": "If ink wound remains, write 净 or stand down with 息.$(br2)If you died and lost items, use 魄 near the recovery point. 魄 returns categories and counts, not a flat copy of the grave."
     }
   ]
 }

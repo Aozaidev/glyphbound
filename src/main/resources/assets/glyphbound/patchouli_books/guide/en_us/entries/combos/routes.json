@@ -1,0 +1,23 @@
+{
+  "name": "Combat Sequences",
+  "icon": "minecraft:iron_sword",
+  "category": "glyphbound:combos",
+  "sortnum": 1,
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "title": "Low-tier brawl",
+      "text": "$(l)心 → 忍 → 力$()$(br2)Good for wood to iron. 力 gives offense, but not enough defense, so 心 and 忍 keep you alive long enough to hit back."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "High-tier pressure",
+      "text": "$(l)心 → 救 → 忍 → 净 → 怒$()$(br2)Good for diamond and above. 救 prevents sudden death, 忍 splits burst, 净 cleans debt, 怒 grows once you can stay alive."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Escape line",
+      "text": "$(l)稳 → 隐 → 息$()$(br2)稳 keeps you from being thrown off position, 隐 breaks attention, 息 repairs hunger or health once you are actually clear."
+    }
+  ]
+}

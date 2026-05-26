@@ -1,6 +1,6 @@
 {
-  "name": "Basics",
-  "description": "Writing glyphs, recognition, self-casting circles, and world-anchored circles.",
-  "icon": "minecraft:ink_sac",
+  "name": "Getting Started",
+  "description": "Controls, writing circles, valid glyphs, and the first safe steps.",
+  "icon": "aozainkmc:ink_brush",
   "sortnum": 0
 }

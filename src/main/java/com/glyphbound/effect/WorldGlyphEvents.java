@@ -84,8 +84,6 @@ public final class WorldGlyphEvents {
             return;
         }
         if (INK_FIELD_WORD.equals(event.mark().word())) {
-            event.setCanceled(true);
-            event.requestCloseInput("墨: 场内不可复写");
             return;
         }
 
@@ -137,7 +135,7 @@ public final class WorldGlyphEvents {
     public static void onLivingDamagePre(LivingDamageEvent.Pre event) {
         Entity attacker = event.getSource().getEntity();
         if (attacker instanceof ServerPlayer player && isInInkField(player, player.level().getGameTime())) {
-            event.setNewDamage(event.getNewDamage() * 3.0F);
+            event.setNewDamage(event.getNewDamage() * inkFieldSpec(activeInkFieldTier(player)).playerMultiplier());
             inkPlayerHitTargets.put(event.getEntity().getUUID(), player.level().getGameTime() + 2L);
         }
     }
@@ -155,7 +153,7 @@ public final class WorldGlyphEvents {
     @SubscribeEvent
     public static void onLivingHeal(LivingHealEvent event) {
         if (event.getEntity() instanceof ServerPlayer player && isInInkField(player, player.level().getGameTime())) {
-            event.setAmount(event.getAmount() * 3.0F);
+            event.setAmount(event.getAmount() * inkFieldSpec(activeInkFieldTier(player)).playerMultiplier());
         }
     }
 
@@ -198,6 +196,7 @@ public final class WorldGlyphEvents {
     @SubscribeEvent
     public static void onPlayerChangedDimension(PlayerEvent.PlayerChangedDimensionEvent event) {
         inkFields.remove(event.getEntity().getUUID());
+        inkDurabilityDebt.remove(event.getEntity().getUUID());
     }
 
     @SubscribeEvent
@@ -236,13 +235,15 @@ public final class WorldGlyphEvents {
     }
 
     public static float healingMultiplier(ServerPlayer player) {
-        return 1.0F;
+        if (!isInInkField(player, player.level().getGameTime())) {
+            return 1.0F;
+        }
+        return inkFieldSpec(activeInkFieldTier(player)).playerMultiplier();
     }
 
     public static boolean isInkFieldOwnerActive(UUID owner, String dimension, long gameTime) {
         InkFieldState field = inkFields.get(owner);
         return field != null
-            && field.expiresAt > gameTime
             && field.dimension.location().toString().equals(dimension);
     }
 
@@ -291,9 +292,16 @@ public final class WorldGlyphEvents {
             return;
         }
 
-        InkFieldSpec spec = inkFieldSpec(InkStaffMetadata.tier(mark));
-        inkFields.put(owner.getUUID(), new InkFieldState(owner.getUUID(), owner.level().dimension(), InkStaffMetadata.tier(mark), owner.level().getGameTime() + spec.durationTicks()));
-        owner.displayClientMessage(Component.literal("墨: 墨染场展开"), true);
+        InkFieldState active = inkFields.get(owner.getUUID());
+        if (active != null && active.dimension().equals(owner.level().dimension())) {
+            inkFields.remove(owner.getUUID());
+            inkDurabilityDebt.remove(owner.getUUID());
+            owner.displayClientMessage(Component.literal("墨: 墨染场收束"), true);
+            return;
+        }
+
+        inkFields.put(owner.getUUID(), new InkFieldState(owner.getUUID(), owner.level().dimension(), InkStaffMetadata.tier(mark)));
+        owner.displayClientMessage(Component.literal("墨: 墨染场展开，再写墨可收束"), true);
     }
 
     private static void castMountain(InkMark mark) {
@@ -377,7 +385,7 @@ public final class WorldGlyphEvents {
             return true;
         }
         ServerPlayer owner = event.getServer().getPlayerList().getPlayer(ownerId);
-        if (owner == null || !owner.isAlive() || !owner.level().dimension().equals(field.dimension) || gameTime >= field.expiresAt) {
+        if (owner == null || !owner.isAlive() || !owner.level().dimension().equals(field.dimension)) {
             return true;
         }
 
@@ -389,7 +397,7 @@ public final class WorldGlyphEvents {
         if (gameTime % 20L == 0L) {
             boostMobsInField(level, owner, spec, gameTime);
         }
-        if (gameTime % 80L == 0L && level.random.nextFloat() < 0.50F) {
+        if (gameTime % spec.spawnIntervalTicks() == 0L) {
             spawnInkPressureMob(level, owner, spec);
         }
         return false;
@@ -403,9 +411,9 @@ public final class WorldGlyphEvents {
             entity -> entity instanceof Enemy && entity.isAlive() && entity.distanceTo(owner) <= spec.radius()
         );
         for (LivingEntity mob : mobs) {
-            GlyphAttributes.setTransientAmount(mob, Attributes.MAX_HEALTH, INK_MAX_HEALTH, 1.0D, AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL);
-            GlyphAttributes.setTransientAmount(mob, Attributes.ATTACK_DAMAGE, INK_ATTACK_DAMAGE, 0.5D, AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL);
-            GlyphAttributes.setTransientAmount(mob, Attributes.MOVEMENT_SPEED, INK_MOVEMENT_SPEED, 0.2D, AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL);
+            GlyphAttributes.setTransientAmount(mob, Attributes.MAX_HEALTH, INK_MAX_HEALTH, spec.mobHealthBonus(), AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL);
+            GlyphAttributes.setTransientAmount(mob, Attributes.ATTACK_DAMAGE, INK_ATTACK_DAMAGE, spec.mobAttackBonus(), AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL);
+            GlyphAttributes.setTransientAmount(mob, Attributes.MOVEMENT_SPEED, INK_MOVEMENT_SPEED, spec.mobSpeedBonus(), AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL);
             if (mob.getHealth() < mob.getMaxHealth() * 0.55F) {
                 mob.setHealth(Math.min(mob.getMaxHealth(), mob.getHealth() + mob.getMaxHealth() * 0.05F));
             }
@@ -419,7 +427,7 @@ public final class WorldGlyphEvents {
     private static void spawnInkPressureMob(ServerLevel level, ServerPlayer owner, InkFieldSpec spec) {
         AABB area = owner.getBoundingBox().inflate(spec.radius());
         int nearbyEnemies = level.getEntitiesOfClass(LivingEntity.class, area, entity -> entity instanceof Enemy && entity.isAlive()).size();
-        if (nearbyEnemies >= 24) {
+        if (nearbyEnemies >= spec.maxPressureMobs()) {
             return;
         }
 
@@ -492,9 +500,17 @@ public final class WorldGlyphEvents {
         return isInsideAnyInkField(player, gameTime);
     }
 
+    private static InkStaffTier activeInkFieldTier(ServerPlayer player) {
+        InkFieldState field = inkFields.get(player.getUUID());
+        if (field != null && field.dimension().equals(player.level().dimension())) {
+            return field.staffTier();
+        }
+        return InkStaffTier.WOOD;
+    }
+
     private static boolean isInsideAnyInkField(LivingEntity entity, long gameTime) {
         for (InkFieldState field : inkFields.values()) {
-            if (field.expiresAt <= gameTime || !field.dimension.equals(entity.level().dimension())) {
+            if (!field.dimension.equals(entity.level().dimension())) {
                 continue;
             }
             Player owner = entity.level().getPlayerByUUID(field.owner);
@@ -749,13 +765,13 @@ public final class WorldGlyphEvents {
 
     private static InkFieldSpec inkFieldSpec(InkStaffTier tier) {
         return switch (tier) {
-            case WOOD -> new InkFieldSpec(8.0D, ticksMinutes(2));
-            case STONE -> new InkFieldSpec(10.0D, ticksMinutes(3));
-            case COPPER -> new InkFieldSpec(12.0D, ticksMinutes(4));
-            case IRON -> new InkFieldSpec(14.0D, ticksMinutes(5));
-            case GOLD -> new InkFieldSpec(16.0D, ticksMinutes(4));
-            case DIAMOND -> new InkFieldSpec(18.0D, ticksMinutes(6));
-            case NETHERITE -> new InkFieldSpec(22.0D, ticksMinutes(8));
+            case WOOD -> new InkFieldSpec(8.0D, 2.0F, 1.00D, 0.50D, 0.20D, ticksSeconds(20), 18);
+            case STONE -> new InkFieldSpec(10.0D, 2.2F, 0.85D, 0.42D, 0.18D, ticksSeconds(18), 18);
+            case COPPER -> new InkFieldSpec(12.0D, 2.4F, 0.70D, 0.35D, 0.15D, ticksSeconds(16), 20);
+            case IRON -> new InkFieldSpec(14.0D, 2.6F, 0.55D, 0.28D, 0.12D, ticksSeconds(14), 20);
+            case GOLD -> new InkFieldSpec(16.0D, 2.8F, 0.60D, 0.30D, 0.14D, ticksSeconds(12), 22);
+            case DIAMOND -> new InkFieldSpec(18.0D, 3.0F, 0.35D, 0.18D, 0.08D, ticksSeconds(10), 22);
+            case NETHERITE -> new InkFieldSpec(22.0D, 4.0F, 0.20D, 0.10D, 0.05D, ticksSeconds(8), 24);
         };
     }
 
@@ -798,10 +814,18 @@ public final class WorldGlyphEvents {
     private record SpringSpec(float healAmount, long cooldownTicks) {
     }
 
-    private record InkFieldSpec(double radius, long durationTicks) {
+    private record InkFieldSpec(
+        double radius,
+        float playerMultiplier,
+        double mobHealthBonus,
+        double mobAttackBonus,
+        double mobSpeedBonus,
+        long spawnIntervalTicks,
+        int maxPressureMobs
+    ) {
     }
 
-    private record InkFieldState(UUID owner, ResourceKey<Level> dimension, InkStaffTier staffTier, long expiresAt) {
+    private record InkFieldState(UUID owner, ResourceKey<Level> dimension, InkStaffTier staffTier) {
     }
 
     private record MountainSpec(int height, BlockState wallState, boolean glowing, float thornDamage, long durationTicks) {

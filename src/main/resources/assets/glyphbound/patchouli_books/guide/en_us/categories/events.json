@@ -1,6 +1,6 @@
 {
-  "name": "World Pressure",
-  "description": "Ink Arenas, tribulations, seals, ink fields, and temporary terrain.",
-  "icon": "minecraft:obsidian",
+  "name": "Combat and World",
+  "description": "入, 出, 劫, 印, 泉, 山, 裂, 墨, and ink core rewards.",
+  "icon": "glyphbound:ink_core",
   "sortnum": 3
 }

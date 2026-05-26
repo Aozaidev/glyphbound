@@ -1,46 +1,28 @@
 {
-  "name": "入: Ink Arena",
+  "name": "入 and 出",
   "icon": "minecraft:obsidian",
   "category": "glyphbound:events",
   "sortnum": 0,
   "pages": [
     {
       "type": "patchouli:text",
-      "title": "Starting it",
-      "text": "Writing $(l)入$() creates an aerial arena above you: first an obsidian platform with radius 8, then deepslate flooring expands ring by ring to radius 24.$(br2)Once the arena is complete, waves begin. Better staves mean more waves, stronger elites, and harder bosses."
-    },
-    {
-      "type": "patchouli:text",
-      "title": "The fight",
-      "text": "Ink Arena enemies are vanilla mobs with boosted stats and marked names.$(br2)Common enemies are Ink Minions. Elites and bosses keep tracking you, so stealth cannot skip the whole encounter.$(br2)入 is a pressure test for your body glyph setup."
-    },
-    {
-      "type": "patchouli:text",
-      "title": "Arena shape",
-      "text": "The center is an obsidian safe platform with radius 8. The outer deepslate floor expands to radius 24, then walls and a top seal appear.$(br2)Think of it as an aerial trial: stand in the center, watch the arena unfold, then survive the waves."
-    },
-    {
-      "type": "patchouli:image",
-      "images": [
-        "glyphbound:textures/gui/guide/calamity_arena.png"
-      ],
-      "border": true,
-      "text": "This diagram only shows proportions. The real arena builds itself ring by ring in the world."
-    },
-    {
-      "type": "patchouli:text",
-      "title": "Victory and 出",
-      "text": "Clearing the final wave does not teleport you immediately. The arena enters a closing state and asks you to write $(l)出$() to leave.$(br2)Pick up drops first if you want. After 出, return particles play and you go back to the original position. Unpicked drops are carried back to your feet."
+      "title": "入: ink arena",
+      "text": "Position: short combat arena that grants vanilla supplies and brush momentum. Writing $(l)入$() builds an aerial arena: obsidian center, expanding deepslate floor, then walls and waves."
     },
     {
       "type": "patchouli:text",
       "title": "Rewards",
-      "text": "Victory grants vanilla supplies based on stave tier: low tiers lean toward iron, coal, and bread; middle tiers add gold; iron and above add diamonds; diamond and above add golden apples and lapis; netherite adds a netherite scrap.$(br2)入 currently does not drop ink cores, but it adds a chunk of brush momentum to the held stave."
+      "text": "Victory rewards vanilla supplies by stave tier: low tiers give iron/coal/bread, mid tiers add gold, iron+ can add diamonds, diamond+ adds golden apples and lapis, netherite can add netherite scrap.$(br2)$(l)入$() grants a small random ink core reward: wood 0-1, stone 1-2, copper 2-3, iron 3-4, gold 4-5, diamond 5-6, netherite 6-7. It also grants momentum to the entry stave: wood +5, stone +8, copper +10, iron/gold +12, diamond/netherite +15."
     },
     {
       "type": "patchouli:text",
-      "title": "Failure",
-      "text": "Taking lethal damage in the arena fails the challenge and returns you: hunger is restored to the entry state, and health becomes half of entry health, minimum 1 heart.$(br2)Death or leaving the game ends the challenge. Unpicked items disappear."
+      "title": "Leaving",
+      "text": "After victory, the arena stays open. Pick up loot, then write $(l)出$() to leave. Loose arena drops are moved back to your feet during exit cleanup.$(br2)Death or logout ends the challenge and clears the arena."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "出",
+      "text": "$(l)出$() is the controlled exit glyph. It is valid after an 入 arena has been cleared.$(br2)It plays the exit effect and returns you to the original place, then removes the arena and temporary lights."
     }
   ]
 }

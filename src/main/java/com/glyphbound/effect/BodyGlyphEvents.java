@@ -717,7 +717,7 @@ public final class BodyGlyphEvents {
         }
     }
 
-    private static float cleanseInkWound(ServerPlayer player, float amount) {
+    static float cleanseInkWound(ServerPlayer player, float amount) {
         InkWound wound = inkWounds.get(player.getUUID());
         if (wound == null || wound.amount <= 0.0F) {
             return 0.0F;

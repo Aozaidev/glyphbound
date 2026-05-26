@@ -8,6 +8,7 @@ import com.aozainkmc.api.InkTargetType;
 import com.aozainkmc.api.InkStaffs;
 import com.aozainkmc.api.event.InkMarkAttachedEvent;
 import com.glyphbound.Glyphbound;
+import com.glyphbound.core.GlyphboundItems;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -749,9 +750,13 @@ public final class CalamityGlyphEvents {
             giveRewards(player);
             ItemStack staff = findStaffById(player, staffId);
             if (!staff.isEmpty()
-                && InkStaffs.tier(staff).orElse(null) == spec.tier()
-                && InkStaffProgress.addProgress(staff, spec.tier(), spec.entryProgressReward())) {
-                player.displayClientMessage(Component.literal("魔杖境界已满，可写「劫」"), true);
+                && InkStaffs.tier(staff).orElse(null) == spec.tier()) {
+                boolean filled = InkStaffProgress.addProgress(staff, spec.tier(), spec.entryProgressReward());
+                if (filled) {
+                    player.displayClientMessage(Component.literal("入: 笔势 +" + spec.entryProgressReward() + "，境界已满，可写「劫」"), true);
+                } else {
+                    player.displayClientMessage(Component.literal("入: 笔势 +" + spec.entryProgressReward()), true);
+                }
             }
         }
 
@@ -773,11 +778,19 @@ public final class CalamityGlyphEvents {
             if (spec.tier() == InkStaffTier.NETHERITE) {
                 rewards.add(new ItemStack(Items.NETHERITE_SCRAP, 1));
             }
+            if (spec.kind() == ChallengeKind.ENTRY) {
+                rewards.add(new ItemStack(GlyphboundItems.INK_CORE.get(), inkCoreReward(player)));
+            }
             for (ItemStack stack : rewards) {
                 if (!player.getInventory().add(stack)) {
                     player.drop(stack, false);
                 }
             }
+        }
+
+        private int inkCoreReward(ServerPlayer player) {
+            int min = spec.tier().ordinal();
+            return min + player.getRandom().nextInt(2);
         }
 
         private void cleanup(ServerLevel level) {

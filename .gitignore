@@ -45,6 +45,9 @@ desktop.ini
 .env.*
 *.local
 
+# Local design/development notes, not shipped as project source.
+docs/
+
 # Windows reserved-device filename noise
 nul
 NUL
@@ -57,3 +60,8 @@ NUL
 *.rej
 *.swp
 *~
+
+第二波
+第一波
+墨界
+analysis

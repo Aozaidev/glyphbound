@@ -1,23 +1,33 @@
 {
-  "name": "Force and Rage",
-  "icon": "minecraft:netherite_sword",
+  "name": "力 and 怒",
+  "icon": "minecraft:iron_sword",
   "category": "glyphbound:body",
-  "sortnum": 3,
+  "sortnum": 4,
   "pages": [
     {
       "type": "patchouli:text",
-      "title": "力 / 怒",
-      "text": "$(l)力$() is the low-tier counterattack glyph. The more final damage you take, the more attack power you gain. Wood caps at +20%, iron at +50%, diamond and above at +60%.$(br2)At diamond and above, 力 gains a small shockwave, but it does not provide the damage reduction that 怒 does."
+      "title": "力: low-tier counter",
+      "text": "Position: turn damage taken into short-term attack. 力 is the early version of the retaliation playstyle.$(br2)It gives offense, not huge defense, so pair it with 心 or 忍."
     },
     {
       "type": "patchouli:text",
-      "title": "怒: high-tier counter",
-      "text": "$(l)怒$() needs a diamond or netherite stave. It tracks final damage after all earlier reductions.$(br2)Every 1 point of final damage adds 1% damage reduction, capped at 65% on diamond and 70% on netherite. Every 5 points adds attack power, capped at +125% on diamond and +150% on netherite."
+      "title": "力 tiers",
+      "text": "Wood 5m, every 1 final damage gives +0.5% attack, cap +20%$(br)Stone 6m, cap +30%$(br)Copper 8m, cap +40%$(br)Iron 10m, cap +50%$(br)Gold 5m, cap +60%$(br)Diamond 10m, cap +60%, small knockback every 10 hits$(br)Netherite 10m, steadier knockback"
     },
     {
       "type": "patchouli:text",
-      "title": "Shockwave",
-      "text": "怒 releases a shockwave every 10 attacks from entities. It pushes nearby creatures within 4 blocks and deals a small amount of magic damage.$(br2)When 怒 expires or is written again, its damage reduction and attack bonuses reset. Death, leaving the game, or switching saves clears it too."
+      "title": "怒: high pressure",
+      "text": "Position: diamond-tier combat engine. 怒 is strong, but capped. Wood, stone, and copper cannot cast it reliably; iron/gold tell you to use diamond."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "怒 tiers",
+      "text": "Diamond 10m: every 1 final damage gives +1% damage reduction, cap 65%; every 5 damage gives +5% attack, cap +125%; every 10 entity hits releases a shockwave.$(br2)Netherite 10m: reduction cap 70%, attack cap +150%, steadier shockwave."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "怒 reset",
+      "text": "The shockwave has radius 4, pushes enemies away, and deals small magic damage.$(br2)When 怒 expires, death/logout/world switch clears reduction, attack gain, and counters. Recasting 怒 also resets reduction and attack gain."
     }
   ]
 }

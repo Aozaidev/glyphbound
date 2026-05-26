@@ -1,0 +1,23 @@
+{
+  "name": "World Sequences",
+  "icon": "minecraft:deepslate_bricks",
+  "category": "glyphbound:combos",
+  "sortnum": 2,
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "title": "Hold a point",
+      "text": "$(l)山 → 泉/泉印 → 稳$()$(br2)山 creates cover, 泉 restores health, 稳 keeps you from being knocked out of position. Use before 入 or when defending a chokepoint."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Control terrain",
+      "text": "$(l)裂 → pull enemies around it → 山 block route$()$(br2)裂 is not a kill trap. It changes movement and buys position. 山 cuts line of sight or closes a route."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Field fight",
+      "text": "$(l)心/救/忍 → 墨 → 怒$()$(br2)墨 greatly increases rewards and pressure. It also makes monsters tougher and costs extra durability, so prepare survival before opening it."
+    }
+  ]
+}

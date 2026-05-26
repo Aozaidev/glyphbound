@@ -1,1 +1,6 @@
-{"name": "入门","description": "怎么写字、认字、开阵，以及最基础的三条规则。","icon": "minecraft:ink_sac","sortnum": 0}
+{
+  "name": "入门",
+  "description": "从做第一根魔杖到第一次写字。先知道怎么开始，再看数值。",
+  "icon": "minecraft:ink_sac",
+  "sortnum": 0
+}

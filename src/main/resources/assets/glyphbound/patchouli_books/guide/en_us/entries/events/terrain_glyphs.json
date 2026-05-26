@@ -1,28 +1,38 @@
 {
-  "name": "Mountain and Rift",
+  "name": "山 and 裂",
   "icon": "minecraft:deepslate_bricks",
   "category": "glyphbound:events",
-  "sortnum": 4,
+  "sortnum": 2,
   "pages": [
     {
       "type": "patchouli:text",
       "title": "Inscribed terrain",
-      "text": "$(l)山$() and $(l)裂$() both use the inscription circle. Press $(l)V$(), choose a world position, then write the glyph to reshape nearby terrain.$(br2)Both are temporary. They roll back on expiry, death, logout, or destruction, so they do not permanently pollute the save."
+      "text": "山 and 裂 use the inscription circle. Press $(l)V$(), choose a world position, then write the glyph to temporarily alter nearby terrain.$(br2)They roll back on expiry, death, logout, or destruction, so they do not permanently dirty the save."
     },
     {
       "type": "patchouli:text",
       "title": "山: temporary cover",
-      "text": "$(l)山$() raises a 5-block-wide wall at the target. Its direction follows the way you were facing.$(br2)Wood makes a low ridge. Iron and above blocks mobs properly. Diamond and netherite add thorns that hurt enemies touching the wall. Gold makes the top glow."
+      "text": "Position: raises a 5-block-wide wall. Direction follows the caster facing. Higher tiers increase height and add special behavior."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "山 tiers",
+      "text": "Wood 5 long x 2 high stone wall/45s$(br)Stone 5x3/60s$(br)Copper 5x3, mossy/90s$(br)Iron 5x4/2m$(br)Gold 5x4, glowing/90s$(br)Diamond 5x5, thorned/3m$(br)Netherite 5x5, obsidian-styled, thorned/4m"
     },
     {
       "type": "patchouli:text",
       "title": "裂: collapse trap",
-      "text": "$(l)裂$() triggers 1 second after writing, collapsing the target ground into a rift. Low tiers make a 3x3 pit, 2 blocks deep; gold and above expands to 5x5.$(br2)Falling in costs 1 heart. Monsters are lightly pushed away from the rim, and netherite rifts slow entities near the edge."
+      "text": "Position: collapses ground to disturb standing position and pathing. It triggers 1 second after writing so you can step away. Falling in deals 1 heart of fall damage."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "裂 tiers",
+      "text": "Wood 3x3, 2 deep/30s$(br)Stone 3x3, irregular rim/45s$(br)Copper 3x3, ink stain bottom/60s$(br)Iron 3x3, rift particles/90s$(br)Gold 5x5, shallow rim/75s$(br)Diamond 5x5, ink smoke/2m$(br)Netherite 5x5, ink smoke, slowing rim/3m"
     },
     {
       "type": "patchouli:text",
       "title": "Protection rules",
-      "text": "山 and 裂 will not overwrite or destroy key blocks such as containers, redstone cores, portals, bedrock, obsidian, or command blocks.$(br2)If the target area is not safe to rewrite, the glyph fails with a message instead."
+      "text": "山 and 裂 do not overwrite containers, redstone cores, portals, bedrock, obsidian, command blocks, or other critical blocks.$(br2)If the target area is unsafe, the glyph fails with a message."
     }
   ]
 }

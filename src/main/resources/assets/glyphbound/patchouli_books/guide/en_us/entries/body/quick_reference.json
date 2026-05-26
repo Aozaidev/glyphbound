@@ -1,23 +1,23 @@
 {
-  "name": "Body Glyph Quick Reference",
-  "icon": "minecraft:book",
+  "name": "Body Glyph Reference",
+  "icon": "minecraft:paper",
   "category": "glyphbound:body",
-  "sortnum": 6,
+  "sortnum": 8,
   "pages": [
     {
       "type": "patchouli:text",
-      "title": "Recovery and insurance",
-      "text": "$(l)心$(): temporary health, capped at about one row.$(br)$(l)命$(): low-tier lethal hit save.$(br)$(l)救$(): stronger lethal hit invulnerability, stone stave and up.$(br)$(l)息$(): stand-still recovery; moving, taking damage, attacking, or right-clicking breaks it."
+      "title": "Survival",
+      "text": "$(l)心$() temporary health, capped at one row.$(br)$(l)命$() low-tier death ward, no cleanup.$(br)$(l)救$() stronger death ward, clears ink wound.$(br)$(l)息$() stand-still recovery after disengage."
     },
     {
       "type": "patchouli:text",
-      "title": "Damage and stability",
-      "text": "$(l)忍$(): turns part of final damage into ink wound.$(br)$(l)净$(): clears negative effects and part of ink wound.$(br)$(l)坚$(): bracing defense; iron and above steadies under repeated hits.$(br)$(l)稳$(): reduces knockback and explosion push; high tiers cancel heavy knockback."
+      "title": "Damage control",
+      "text": "$(l)忍$() delays burst damage as ink wound.$(br)$(l)净$() removes negative effects and ink wound.$(br)$(l)坚$() hold position under repeated hits.$(br)$(l)稳$() reduce knockback and displacement."
     },
     {
       "type": "patchouli:text",
-      "title": "Scouting and counterplay",
-      "text": "$(l)隐$(): disengage with stealth; attacking, right-clicking, opening, mining, or placing breaks it.$(br)$(l)明$(): environmental hints.$(br)$(l)脉$(): life strength and direction.$(br)$(l)力$(): low-tier damage gain when hurt.$(br)$(l)怒$(): diamond+ damage gain, reduction, and shockwaves.$(br)$(l)魄$(): recover part of death drops."
+      "title": "Information and offense",
+      "text": "$(l)隐$() disengage and reposition.$(br)$(l)明$() read blocks and hazards.$(br)$(l)脉$() read nearby life pressure.$(br)$(l)力$() low-tier retaliation.$(br)$(l)怒$() diamond-tier retaliation engine.$(br)$(l)魄$() recover part of death loss."
     }
   ]
 }

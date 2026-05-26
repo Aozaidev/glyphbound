@@ -1,33 +1,28 @@
 {
-  "name": "劫: Tribulation",
-  "icon": "minecraft:lightning_rod",
+  "name": "劫",
+  "icon": "minecraft:nether_star",
   "category": "glyphbound:events",
-  "sortnum": 1,
+  "sortnum": 4,
   "pages": [
     {
       "type": "patchouli:text",
-      "title": "Purpose",
-      "text": "$(l)劫$() is the breakthrough trial before a stave can upgrade.$(br2)Normal successful glyphs add brush momentum to the held stave. Winning an $(l)入$() Ink Arena adds a larger chunk. When the stave says its realm is full, write 劫 to begin tribulation."
+      "title": "Before 劫",
+      "text": "Do not open 劫 just because the glyph exists. It is the stave breakthrough challenge.$(br2)Use it when the held stave has full momentum and you actually want to unlock the next tier."
     },
     {
       "type": "patchouli:text",
-      "title": "Arena",
-      "text": "劫 creates a harsher aerial arena than 入: the center is still obsidian, the outer deepslate expands in rings, and the walls rise higher.$(br2)It reuses Ink Arena rules, but the waves are longer and elites and bosses hit harder."
-    },
-    {
-      "type": "patchouli:text",
-      "title": "Victory",
-      "text": "After all waves are cleared, the current stave gains an upgrade-ready mark. You can pick up drops first, then write $(l)出$() to leave.$(br2)After leaving, use the short-stave upgrade shape to craft the next tier."
+      "title": "Basic prep",
+      "text": "Standard prep: $(l)心 + 忍 + 净$().$(br)Dangerous arena: add $(l)稳$().$(br)Heavy melee pressure: add $(l)坚$().$(br2)Low tiers use 力 for offense. Diamond+ can use 怒."
     },
     {
       "type": "patchouli:text",
       "title": "Failure",
-      "text": "Failing tribulation does not destroy the stave and does not lock you out for long.$(br2)It only halves the current stave's brush momentum, rounding odd values up. Refill momentum and try again."
+      "text": "Failure does not delete the stave. It only halves current momentum.$(br2)Repair durability if needed, refill momentum, and try again."
     },
     {
       "type": "patchouli:text",
-      "title": "Advice",
-      "text": "劫 is rough enough that a body glyph setup matters: 心 for health, 忍 to split burst damage, 净 to clean ink wound, 稳 to hold position, and 怒 to strike back.$(br2)It is not a daily farming arena. It is the gate for stave growth."
+      "title": "Success",
+      "text": "The exact stave that opened 劫 receives the upgrade-ready mark. Then use the diagonal upgrade recipe in the crafting grid.$(br2)If you switch staves, the other stave does not inherit the mark."
     }
   ]
 }

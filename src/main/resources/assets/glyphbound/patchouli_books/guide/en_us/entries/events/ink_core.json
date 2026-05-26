@@ -1,23 +1,28 @@
 {
-  "name": "Ink Cores and Rewards",
-  "icon": "minecraft:echo_shard",
+  "name": "Ink Cores",
+  "icon": "glyphbound:ink_core",
   "category": "glyphbound:events",
-  "sortnum": 2,
+  "sortnum": 3,
   "pages": [
     {
       "type": "patchouli:text",
-      "title": "Current version",
-      "text": "Currently stable: $(l)入$(), $(l)劫$(), $(l)印$(), $(l)泉$(), $(l)墨$(), $(l)山$(), and $(l)裂$(). 入 handles supplies and brush momentum. 劫 handles stave breakthrough. 印, 泉, 墨, 山, and 裂 form the tactical base of the second wave.$(br2)Ink fields can drop ink cores; 入 itself does not."
+      "title": "What it is",
+      "text": "Ink cores are the core material of ink magic. For now, $(l)入$() victories grant a small amount, and monsters killed inside ink fields can drop more. They can repair staves.$(br2)Future systems will use them for rituals, seal strengthening, and larger instance content."
     },
     {
       "type": "patchouli:text",
-      "title": "What ink cores are",
-      "text": "Ink cores are the long-term reward material for later second-wave systems: dungeons, ritual draws, and advanced progression.$(br2)They do not appear from ordinary body glyphs. They come from ink fields now, and later from dedicated challenges. 劫 is mainly for upgrading staves, not farming ink cores."
+      "title": "Repair use",
+      "text": "Ink cores can repair staves on an anvil. Slot one: the stave to keep. Slot two: ink cores. Each core repairs a fixed 250 durability, up to 4 cores per operation."
     },
     {
       "type": "patchouli:text",
-      "title": "Ritual draws later",
-      "text": "The planned draw system will be a world ritual: place an altar, socket ink cores, write the ritual glyph, then let the circle animation reveal the reward.$(br2)For now, store ink cores. The long-term spending loop is not open yet."
+      "title": "Why not 入?",
+      "text": "入 gives vanilla supplies, brush momentum, and a small ink core reward. It is the low-friction combat loop.$(br2)墨 creates a risky field and can drop more ink cores over time. Later, 界 will become the directed material-farming loop."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Later uses",
+      "text": "Planned direction: altar rituals, ink-core draws, seal upgrades, ink-field extension, and the larger 界 instance system.$(br2)Current version first closes the drop-and-repair loop."
     }
   ]
 }

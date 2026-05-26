@@ -1,28 +1,48 @@
 {
-  "name": "Rest, Hide, Brace, Steady",
+  "name": "息, 坚, 稳, 隐",
   "icon": "minecraft:shield",
   "category": "glyphbound:body",
   "sortnum": 2,
   "pages": [
     {
       "type": "patchouli:text",
-      "title": "息: stand still",
-      "text": "$(l)息$() only works after you write it and stay still. Moving, taking damage, attacking, or right-clicking breaks it.$(br2)Duration ranges from 30 seconds to 3 minutes based on stave tier. It is for recovering in a safe corner after combat, not healing while swinging."
+      "title": "息: stillness recovery",
+      "text": "Position: recovery after disengaging. After casting 息, stand still to recover health or hunger over time.$(br2)Taking damage or moving interrupts it; you must recast to resume. It is for breathing room, not face-tanking."
     },
     {
       "type": "patchouli:text",
-      "title": "隐: vanish",
-      "text": "$(l)隐$() helps you disengage or slip past ordinary enemies. Attacking, right-clicking, opening containers, mining, or placing blocks immediately breaks it.$(br2)Elite and boss-style enemies weaken stealth so it cannot skip every challenge."
+      "title": "息 tiers",
+      "text": "Wood 30s, every 40 ticks restores 1 hunger or 1 health$(br)Stone 45s, 36 ticks$(br)Copper 60s, 34 ticks, better saturation$(br)Iron 90s, 30 ticks, 1 hunger or 1.5 health$(br)Gold 45s, 24 ticks, 1 hunger or 2 health$(br)Diamond 120s, 28 ticks$(br)Netherite 180s, 24 ticks"
     },
     {
       "type": "patchouli:text",
-      "title": "坚 / 稳",
-      "text": "$(l)坚$() is your bracing defense. Iron and above becomes steadier under repeated hits, making it harder for enemies to chain you down.$(br2)$(l)稳$() is stability against terrain, knockback, and explosions. Wood only softens knockback a little; iron cuts it hard; netherite almost holds you in place."
+      "title": "坚: hold line",
+      "text": "Position: doorway, melee pressure, repeated hits. 坚 grants toughness and knockback resistance, but slows movement.$(br2)Diamond and above become steadier under repeated hits, then decay after pressure drops."
     },
     {
       "type": "patchouli:text",
-      "title": "Heavy knockback",
-      "text": "稳 also weakens explosion push. Diamond and netherite can cancel heavy knockback outright: diamond cancels 1 charge, netherite cancels 2.$(br2)In short: 坚 helps you tank the line; 稳 stops the arena, explosions, and repeated bumps from throwing you away."
+      "title": "坚 tiers",
+      "text": "Wood 30s, light toughness/knockback resist/slow$(br)Stone 45s, higher knockback resist$(br)Copper 60s, adds explosion knockback control$(br)Iron 90s, full line-holding profile$(br)Gold 45s, strong but short$(br)Diamond 120s, repeated hits improve stability$(br)Netherite 180s, most stable, still slowed"
+    },
+    {
+      "type": "patchouli:text",
+      "title": "稳: anti-displacement",
+      "text": "Position: cliffs, caves, explosions, ranged knockback. 稳 reduces unwanted movement rather than raw damage.$(br2)High tiers can cancel large knockback events."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "稳 tiers",
+      "text": "Wood 45s, lowers knockback and sliding$(br)Stone 60s, stronger edge stability$(br)Copper 90s, lowers water push$(br)Iron 120s, combat-position stability$(br)Gold 60s, strong but short$(br)Diamond 180s, cancels 1 large knockback$(br)Netherite 240s, cancels 2 large knockbacks"
+    },
+    {
+      "type": "patchouli:text",
+      "title": "隐: disengage",
+      "text": "Position: drop aggro, reposition, avoid patrols. Attacking, using items aggressively, right-click actions, or taking pressure breaks it.$(br2)Higher tiers lower detection distance and help against ranged mobs."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "隐 tiers",
+      "text": "Wood 30s, reduced detection range$(br)Stone 45s, lower detection$(br)Copper 60s, better in open ground$(br)Iron 90s, can re-hide after brief disengage$(br)Gold 45s, strong but short$(br)Diamond 120s, lowers ranged lock-on$(br)Netherite 180s, most stable stealth"
     }
   ]
 }

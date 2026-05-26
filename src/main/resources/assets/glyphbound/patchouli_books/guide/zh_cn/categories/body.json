@@ -1,1 +1,6 @@
-{"name": "身命卷","description": "直接写在自己身上的字：加血、保命、硬扛、潜行、侦查、反打、死后牵装备。","icon": "minecraft:golden_apple","sortnum": 2}
+{
+  "name": "身命卷",
+  "description": "写在自己身上的 14 个核心字：保命、承伤、侦查、恢复、反打。",
+  "icon": "minecraft:golden_apple",
+  "sortnum": 2
+}

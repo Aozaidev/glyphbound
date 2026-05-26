@@ -9,3 +9,6 @@
 *.gif binary
 *.jar binary
 *.onnx binary
+
+# Keep planning/review notes out of source release archives.
+docs/ export-ignore

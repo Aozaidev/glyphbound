@@ -1,0 +1,33 @@
+{
+  "name": "常用出招表",
+  "icon": "minecraft:map",
+  "category": "glyphbound:combos",
+  "sortnum": 0,
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "title": "日常下矿",
+      "text": "$(l)心 → 命 → 明/脉$()$(br2)说明：心给容错，命防第一次暴毙，明/脉帮你判断前面有没有怪、矿、容器或危险。"
+    },
+    {
+      "type": "patchouli:text",
+      "title": "遇到怪群",
+      "text": "$(l)稳 → 坚 → 忍 → 净$()$(br2)稳先防击退和地形失误，坚负责站住，忍把爆发拆成墨伤，净负责收尾。"
+    },
+    {
+      "type": "patchouli:text",
+      "title": "低阶反打",
+      "text": "$(l)心 → 忍 → 力$()$(br2)适合木到铁杖。力不提供大量减伤，所以前面仍然要靠心和忍保证能活到反打。"
+    },
+    {
+      "type": "patchouli:text",
+      "title": "高阶反打",
+      "text": "$(l)心 → 救 → 忍 → 净 → 怒$()$(br2)适合钻石以上。救防猝死，忍拆爆发，净清债，怒在你站住之后越打越强。"
+    },
+    {
+      "type": "patchouli:text",
+      "title": "战后整理",
+      "text": "$(l)净 → 息$()$(br2)先净掉墨伤和负面，再息站定恢复。反过来容易被墨伤结算打断。"
+    }
+  ]
+}

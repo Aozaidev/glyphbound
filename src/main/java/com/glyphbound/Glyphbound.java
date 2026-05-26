@@ -18,6 +18,6 @@ public final class Glyphbound {
         GlyphboundItems.register(modBus);
         InkGlyphRegistry.registerAll(GlyphboundWords.IMPLEMENTED);
         InkGlyphClientBehaviorRegistry.registerCloseAfterRecognize(GlyphboundWords.CLOSE_AFTER_RECOGNIZE);
-        LOGGER.info("Glyphbound loaded with body glyph phase 001 effects");
+        LOGGER.info("Glyphbound loaded");
     }
 }

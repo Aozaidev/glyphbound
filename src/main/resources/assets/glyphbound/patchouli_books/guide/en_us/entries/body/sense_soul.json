@@ -1,28 +1,43 @@
 {
-  "name": "Sight, Pulse, Soul",
+  "name": "明, 脉, 魄",
   "icon": "minecraft:ender_eye",
   "category": "glyphbound:body",
-  "sortnum": 4,
+  "sortnum": 3,
   "pages": [
     {
       "type": "patchouli:text",
-      "title": "明: environmental hints",
-      "text": "$(l)明$() reads the environment. Wood mostly reports darkness and a little danger. Stone starts reporting containers. Copper starts reporting ores. Iron and above gives more complete hints for danger, containers, ores, and traps.$(br2)It does not give exact wallhack coordinates. It is a clue, not a minimap."
+      "title": "明: read the area",
+      "text": "Position: scouting. 明 highlights useful or dangerous information around you, with higher staves increasing range and detail.$(br2)It is best before entering a cave, structure, or arena."
     },
     {
       "type": "patchouli:text",
-      "title": "脉: life sense",
-      "text": "$(l)脉$() senses nearby life, strength, and direction. Wood reaches 8 blocks and only gives rough movement. Copper reaches 16. Diamond reaches 24. Netherite reaches 28.$(br2)Better staves make the report closer to actual count, strength, and direction."
+      "title": "明 tiers",
+      "text": "Wood 30s, interactive blocks glimmer$(br)Stone 45s, trap clues$(br)Copper 60s, ore/container direction$(br)Iron 90s, mechanisms, danger blocks, rare ore$(br)Gold 45s, high hint density but short$(br)Diamond 120s, farther outlines$(br)Netherite 180s, largest range"
     },
     {
       "type": "patchouli:text",
-      "title": "魄: death recovery",
-      "text": "$(l)魄$() can be written within 10 minutes after death. It pulls back part of the still-existing dropped items and experience from your death site.$(br2)It rolls item categories first, then rolls amounts within each category. Recovered items are removed from the death site, so it does not duplicate anything."
+      "title": "脉: life pulse",
+      "text": "Position: reads nearby life pressure. 脉 tells you where living threats are and how strong the area feels.$(br2)Use it before committing to 入, 墨, or an unknown cave turn."
     },
     {
       "type": "patchouli:text",
-      "title": "Recovery ratio",
-      "text": "Wood recovers about 20% of item categories and 20% of each chosen category. Iron is about 50%. Diamond is about 70%. Netherite is about 80%.$(br2)For example, planks, a stone sword, and torches are grouped by item type first, then each selected group rolls its own amount."
+      "title": "脉 tiers",
+      "text": "Wood 20s, very close life strength$(br)Stone 30s, rough direction$(br)Copper 45s, normal vs strong enemy$(br)Iron 60s, mob-group density$(br)Gold 30s, high precision but short$(br)Diamond 90s, strong enemy direction/distance band$(br)Netherite 120s, strong enemy/friendly/hunted target"
+    },
+    {
+      "type": "patchouli:text",
+      "title": "魄: reclaim death loss",
+      "text": "Position: partial recovery after death. 魄 does not simply restore 80% of everything.$(br2)It groups lost stacks by item identity first. 48 planks are one group, 12 torches another, one damaged sword another."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "魄 grouping",
+      "text": "First, it rolls which item groups can return. Then each returned group rolls how much of that group returns.$(br2)Enchants, durability, and components can split tools into separate groups. Odd counts round up when halved by failure rules."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "魄 tiers",
+      "text": "Wood returns 20% groups, 20% per group, 20% XP$(br)Stone 30/30/30$(br)Copper 40/40/40$(br)Iron 50/50/50$(br)Gold 60/60/60$(br)Diamond 70/70/70$(br)Netherite 80/80/80"
     }
   ]
 }

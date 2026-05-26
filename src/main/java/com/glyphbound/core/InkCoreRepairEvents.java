@@ -11,6 +11,7 @@ import net.neoforged.neoforge.event.AnvilUpdateEvent;
 @EventBusSubscriber(modid = Glyphbound.MOD_ID)
 public final class InkCoreRepairEvents {
     private static final int MAX_CORES_PER_REPAIR = 4;
+    private static final int DURABILITY_PER_INK_CORE = 250;
 
     private InkCoreRepairEvents() {
     }
@@ -29,7 +30,7 @@ public final class InkCoreRepairEvents {
             return;
         }
 
-        int repairPerCore = Math.max(1, staff.getMaxDamage() / 4);
+        int repairPerCore = Math.min(staff.getMaxDamage(), DURABILITY_PER_INK_CORE);
         int coresNeeded = Math.max(1, (damage + repairPerCore - 1) / repairPerCore);
         int coresUsed = Math.min(Math.min(material.getCount(), MAX_CORES_PER_REPAIR), coresNeeded);
         if (coresUsed <= 0) {

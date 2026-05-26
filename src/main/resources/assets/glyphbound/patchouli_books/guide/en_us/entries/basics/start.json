@@ -1,33 +1,38 @@
 {
-  "name": "Getting Started",
-  "icon": "minecraft:ink_sac",
+  "name": "First Ten Minutes",
+  "icon": "aozainkmc:ink_brush",
   "category": "glyphbound:basics",
   "sortnum": 0,
   "pages": [
     {
       "type": "patchouli:text",
-      "title": "First steps",
-      "text": "Craft a wooden stave, press $(l)G$() to open the self-casting circle, then write $(l)心$() to pad your health.$(br2)Before looking for a fight, write $(l)命$() for one cheap death save. Before entering caves, try $(l)明$() or $(l)脉$() to check for danger first."
+      "title": "Start with 心",
+      "text": "Craft a wooden stave. Hold it, press $(l)G$(), and write $(l)心$().$(br2)This first cast proves four things: the circle opens, your writing is recognized, the glyph is implemented, and the effect appears on your character."
     },
     {
       "type": "patchouli:text",
-      "title": "Self-casting circle",
-      "text": "$(l)G$() opens the self-casting circle. Glyphs written here attach to you.$(br)Hold left click to draw, then release to recognize; you can also press $(l)Enter$() to recognize manually.$(br2)Most body glyphs use this circle. You can also write $(l)泉$() for an instant heal or $(l)墨$() to unfold an ink field."
+      "title": "Two circles",
+      "text": "$(l)G$() opens the body writing circle. Body glyphs mostly affect you.$(br2)$(l)V$() opens the inscription circle. 山, 裂, and 印 use it for world positions; 泉 can also use it to heal players near the target block."
     },
     {
       "type": "patchouli:text",
-      "title": "Inscription circle",
-      "text": "$(l)V$() opens the inscription circle. Glyphs written here anchor to the world instead of your body.$(br2)Use it to write $(l)泉$() on a block for nearby healing, or write $(l)山$() and $(l)裂$() to shape temporary terrain. $(l)印$() first asks you to pick a block, then reopens the circle for the second glyph.$(br2)Either circle closes if you move 10 blocks away, so it cannot keep eating left clicks after a teleport."
+      "title": "Close rules",
+      "text": "The circle closes when you finish writing, move too far away, change dimension, die, or log out.$(br2)If it remains open after movement, step away from the writing point; distance cleanup is there so the circle cannot keep eating left clicks."
     },
     {
       "type": "patchouli:text",
-      "title": "Three rules",
-      "text": "The glyph decides the intent: $(l)心$() means health, $(l)怒$() means getting hit and striking back.$(br2)The stave decides the tier: the same glyph becomes stronger, lasts longer, or gains extra rules on better staves. If your stave is too weak, the game tells you.$(br2)Most custom effects expire. Death, leaving the world, or switching saves clears them."
+      "title": "Valid glyphs",
+      "text": "Only implemented glyphs cast. Unknown characters show a message and do not gain momentum or spend durability.$(br2)Current core set: 心 命 救 息 忍 净 坚 稳 隐 明 脉 力 怒 魄 入 出 劫 印 泉 山 裂 墨."
     },
     {
       "type": "patchouli:text",
-      "title": "If it fails",
-      "text": "If recognition is wrong, write again. If a glyph does nothing, check three things:$(br)1. Are you holding a stave?$(br)2. Is the stave tier high enough?$(br)3. Did you move more than 10 blocks from the circle?$(br2)Do not force long glyphs while surrounded. Stabilize first with short survival glyphs like $(l)心$(), $(l)命$(), and $(l)忍$()."
+      "title": "State cleanup",
+      "text": "Glyphbound custom states clear on death, logout, world switch, or server stop. Temporary terrain and arenas also clean themselves.$(br2)Vanilla potion effects follow normal Minecraft rules."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "First route",
+      "text": "Recommended order:$(br)1. Craft a wooden stave.$(br)2. Write $(l)心$().$(br)3. Before caving, write $(l)命$() or $(l)忍$().$(br)4. Under pressure, learn $(l)净$(), $(l)稳$(), and $(l)力$().$(br2)Do not memorize the whole book first. Learn how to survive."
     }
   ]
 }

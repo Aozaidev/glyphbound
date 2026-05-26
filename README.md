@@ -1,64 +1,60 @@
-# Glyphbound
+# Glyphbound: Hanzi Magic
 
-Glyphbound, display name `墨蕴·万象`, is the official gameplay addon workspace for Aozai Ink MC.
+Glyphbound is a NeoForge 1.21.1 gameplay mod built on Aozai Ink MC. It lets you draw handwritten Chinese characters to cast survival spells, enter ink arenas, place area seals, and reshape nearby terrain.
 
-This repository hosts the addon shell, design workflow, and first gameplay implementation pass for handwritten glyph effects.
+The mod is designed first for singleplayer survival. It uses Aozai Ink MC for handwriting recognition and Patchouli for the in-game guide book.
 
-## Relationship To Aozai Ink MC
-
-Aozai Ink MC is the foundation:
+## Requirements
 
 ```text
-handwriting -> OCR -> InkMark -> API/events
+Minecraft 1.21.1
+NeoForge 21.1.230 or newer in the 21.1 line
+Aozai Ink MC 0.1.0 or newer
+Patchouli 1.21.1-93 NeoForge or newer
+Java 21
 ```
 
-Glyphbound is the gameplay layer:
+## Current Features
+
+Implemented glyphs:
 
 ```text
-InkMark -> vanilla system interaction -> long-term world consequences
+心 命 救 息 忍 净 坚 稳 隐 明 脉 力 怒 魄
+入 出 劫
+印 泉 山 裂 墨
 ```
 
-The addon should not change the foundation mod. It should read marks through the public API and respond through ordinary NeoForge/Minecraft systems.
-
-## Current Status
-
-Implemented:
+Core systems:
 
 ```text
-NeoForge 1.21.1 addon shell
-Required dependency metadata for aozainkmc
-Agent design workflow
-身命卷 phase 001 body glyphs: 心 救 息 忍 坚 稳 隐 明 净 怒 脉
+14 body glyphs for survival, recovery, scouting, and counterattack
+Ink arenas through 入 and 出
+Tribulation and staff upgrade progression through 劫
+Area seals through 印
+Instant and area healing through 泉
+Temporary terrain through 山 and 裂
+Toggleable ink fields through 墨
+Ink core drops and anvil staff repair
+Patchouli guide book: 执笔引
 ```
 
-Not implemented yet:
+## How To Start
 
-```text
-Specific glyph mechanics
-Blocks
-Items
-Entities
-Dimensions
-Recipes
-Loot tables
-Progression systems
-Terrain/redstone/summon/dimension glyph modules
-```
+1. Craft a wooden ink staff with one plank over one stick in the short diagonal shape.
+2. Hold the staff and press `G` to open the casting circle.
+3. Draw `心` to gain temporary max health.
+4. Draw `命` before dangerous trips for a cheap fatal-hit safety net.
+5. Open `执笔引` in game for the full glyph list, staff tiers, arena rules, and seal combinations.
+
+`G` writes onto yourself. `V` writes onto the world as an inscription circle. Most body glyphs use `G`; world and seal glyphs such as `印`, `泉`, `山`, and `裂` use `V`.
 
 ## Build
 
-Build Aozai Ink MC first so its local API jar exists:
+Build Aozai Ink MC first so the local API jar exists, then build Glyphbound:
 
 ```powershell
-cd D:\projectmc\aozainkmc
-..\.gradle-dist\gradle-8.14.3\bin\gradle.bat build
-```
-
-Then build this addon:
-
-```powershell
-cd D:\projectmc\glyphbound
-..\.gradle-dist\gradle-8.14.3\bin\gradle.bat build
+gradle -p ../aozainkmc build
+gradle build
 ```
 
 If using a normal Gradle install:
@@ -67,13 +63,11 @@ If using a normal Gradle install:
 gradle build
 ```
 
-## Design Workflow
+The release jar is written to:
 
-1. Give a low-cost agent one batch assignment from `docs/batches/`.
-2. Require the agent to output Markdown design specs only, using `docs/glyph-effect-spec-format.md`.
-3. Do not let the agent write Java code, data packs, assets, or recipes in the first pass.
-4. Review the output with `docs/review-rubric.md`.
-5. Only approved specs become implementation tasks.
+```text
+build/libs/glyphbound-0.1.0.jar
+```
 
 ## License
 

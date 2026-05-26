@@ -1,1 +1,6 @@
-{"name": "战斗与世界","description": "墨斗场、渡劫突破，以及封印、墨染场、地形字。","icon": "minecraft:obsidian","sortnum": 3}
+{
+  "name": "战斗与世界",
+  "description": "入、出、劫、印、泉、山、裂、墨，以及墨核奖励。",
+  "icon": "minecraft:obsidian",
+  "sortnum": 3
+}

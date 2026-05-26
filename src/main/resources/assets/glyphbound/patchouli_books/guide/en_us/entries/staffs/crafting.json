@@ -1,5 +1,5 @@
 {
-  "name": "Crafting Staves",
+  "name": "Crafting, Upgrade, Repair",
   "icon": "aozainkmc:ink_brush",
   "category": "glyphbound:staffs",
   "sortnum": 0,
@@ -8,60 +8,43 @@
       "type": "patchouli:crafting",
       "recipe": "aozainkmc:ink_brush",
       "title": "Wooden stave",
-      "text": "The basic stave is a short diagonal recipe: plank in the upper-right, stick in the lower-left.$(br)It is not the long handle shape used by vanilla tools."
+      "text": "The basic stave is a short diagonal recipe: upper-right plank, lower-left stick.$(br2)It is not the vertical tool-handle recipe used by vanilla tools."
     },
     {
       "type": "patchouli:text",
-      "title": "2x2 layout",
-      "text": "A crafting table or your inventory grid both work:$(br2)$(l)Empty  Plank$()$(br)$(l)Stick   Empty$()$(br2)If you place a vertical stick and plank, that is not this mod's stave recipe."
+      "title": "Inventory 2x2",
+      "text": "Your inventory grid works:$(br2)$(l)Empty  Plank$()$(br)$(l)Stick   Empty$()$(br2)If you place it vertically or mirror the positions, no result appears."
     },
     {
-      "type": "patchouli:image",
-      "images": [
-        "glyphbound:textures/gui/guide/staff_layout.png"
-      ],
-      "border": true,
-      "text": "Think short wand, not vanilla tool handle."
-    },
-    {
-      "type": "patchouli:text",
-      "title": "Upgrade shape",
-      "text": "Upgrades use the same diagonal shape: next-tier material in the upper-right, tribulation-cleared stave in the lower-left.$(br2)Only a stave with full brush momentum and a cleared $(l)劫$() can upgrade."
+      "type": "patchouli:crafting",
+      "recipe": "aozainkmc:staff_upgrade",
+      "title": "Upgrade recipe view",
+      "text": "Upgrades use the same short-stave shape: next material in the upper-right, old stave in the lower-left.$(br2)The custom recipe checks the old stave tier and required next material."
     },
     {
       "type": "patchouli:text",
-      "title": "Brush momentum",
-      "text": "Every successful implemented glyph adds 1 brush momentum to the stave you are holding. Unimplemented glyphs say “Glyph unopened” and do not cast, gain momentum, or cost durability.$(br2)Clearing an $(l)入$() Ink Arena adds a larger chunk. When the stave says its realm is full, you can write $(l)劫$()."
+      "title": "Upgrade recipe",
+      "text": "Upgrades use the same diagonal shape:$(br2)$(l)Empty  Next material$()$(br)$(l)Old stave Empty$()$(br2)Material order: stone material → copper ingot → iron ingot → gold ingot → diamond → netherite ingot."
     },
     {
       "type": "patchouli:text",
-      "title": "After tribulation",
-      "text": "After writing $(l)劫$() and clearing the trial, the current stave gains an upgrade-ready mark.$(br2)Then craft with the short-stave shape: stone, copper ingot, iron ingot, gold ingot, diamond, and netherite ingot each move to the next tier. The new stave starts with zero momentum."
+      "title": "Momentum and 劫",
+      "text": "Successfully casting an implemented glyph grants 1 brush momentum to the held stave. Clearing $(l)入$() grants extra momentum: wood +5, stone +8, copper +10, iron/gold +12, diamond/netherite +15.$(br2)When the stave is full, write $(l)劫$() and clear the tribulation arena to mark it upgrade-ready."
     },
     {
       "type": "patchouli:text",
-      "title": "Anvil repair",
-      "text": "Put the stave you want to keep in the first anvil slot, and another same-tier stave in the second slot. The output repairs the first stave and keeps its momentum and tribulation state.$(br2)The second stave is only material. Its name, momentum, and other data do not transfer."
+      "title": "Same-tier repair",
+      "text": "On an anvil, put the stave you want to keep in slot one and another same-tier stave in slot two.$(br2)The output keeps slot one momentum, tribulation state, name, and extra data. Slot two is only consumed as repair material."
     },
     {
       "type": "patchouli:text",
       "title": "Ink core repair",
-      "text": "You can also put $(l)ink cores$() in the second anvil slot. Each core repairs 25% of the stave's max durability, up to 4 cores per operation.$(br2)Ink cores repair durability only. They do not add momentum, transfer tribulation state, or change the first stave's name or progress."
+      "text": "You can also place $(l)ink cores$() in the second anvil slot. Each core repairs a fixed 250 durability, up to 4 cores per operation.$(br2)Ink cores repair durability only. They do not grant momentum or transfer tribulation state."
     },
     {
       "type": "patchouli:text",
-      "title": "Tier feel",
-      "text": "Wood is entry-level. Stone becomes steadier. Copper is the middle step. Iron is the workhorse. Gold leans toward burst. Diamond unlocks the full high-pressure playstyle. Netherite is the current top tier."
-    },
-    {
-      "type": "patchouli:text",
-      "title": "If crafting fails",
-      "text": "If the recipe has no result, one of three things is usually wrong: the stave momentum is not full, $(l)劫$() has not been cleared, or the material/stave positions are swapped.$(br2)If durability is the only problem, repair it on an anvil with a same-tier stave. You do not need to repeat tribulation."
-    },
-    {
-      "type": "patchouli:text",
-      "title": "Which stave?",
-      "text": "Daily survival: wood to copper is enough.$(br2)Caving and normal combat: iron is the most comfortable.$(br2)Ink Arenas and high-pressure fights: diamond starts to feel right.$(br2)To write a glyph at its fullest: use netherite."
+      "title": "Tier meaning",
+      "text": "Wood: entry. Stone: stable. Copper: utility. Iron: standard combat. Gold: strong but short-lived. Diamond: advanced mechanics. Netherite: endgame stability.$(br2)Higher staves usually increase range, duration, cap, or add a secondary mechanic."
     }
   ]
 }
