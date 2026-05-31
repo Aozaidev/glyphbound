@@ -1,0 +1,18 @@
+{
+  "name": "第3阶段总览",
+  "icon": "aozainkmc:iron_ink_staff",
+  "category": "glyphbound:stage3_iron",
+  "sortnum": 0,
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "title": "这一阶段做什么",
+      "text": "目标：把战斗从“硬抗”变成“布置场地”。$(br2)$(l)救$() 是高级濒死保险，$(l)泉$() 瞬间抬血，$(l)脉$() 开启夜视并标记矿物、容器和敌人。$(br2)之后学 $(l)印$()、$(l)山$()、$(l)裂$()，用铭刻阵改变战场。"
+    },
+    {
+      "type": "patchouli:text",
+      "title": "印：封印系统",
+      "text": "用 V 对目标方块写 $(l)印$()，再写第二字。已接入：心命救息忍净坚稳隐力怒泉。$(br2)封印范围内所有玩家都能受益。范围和持续按魔杖等级决定。"
+    }
+  ]
+}

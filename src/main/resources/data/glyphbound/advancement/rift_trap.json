@@ -1,0 +1,22 @@
+{
+  "parent": "glyphbound:first_glyph",
+  "criteria": {
+    "done": {
+      "trigger": "minecraft:impossible"
+    }
+  },
+  "display": {
+    "description": "首次生成裂隙。",
+    "frame": "task",
+    "icon": {
+      "count": 1,
+      "id": "minecraft:deepslate"
+    },
+    "title": "裂地成陷"
+  },
+  "requirements": [
+    [
+      "done"
+    ]
+  ]
+}

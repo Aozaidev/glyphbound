@@ -1,0 +1,101 @@
+{
+  "parent": "glyphbound:first_glyph",
+  "criteria": {
+    "bright": {
+      "trigger": "minecraft:impossible"
+    },
+    "cleanse": {
+      "trigger": "minecraft:impossible"
+    },
+    "endurance": {
+      "trigger": "minecraft:impossible"
+    },
+    "firm": {
+      "trigger": "minecraft:impossible"
+    },
+    "force": {
+      "trigger": "minecraft:impossible"
+    },
+    "heart": {
+      "trigger": "minecraft:impossible"
+    },
+    "hidden": {
+      "trigger": "minecraft:impossible"
+    },
+    "life_ward": {
+      "trigger": "minecraft:impossible"
+    },
+    "pulse": {
+      "trigger": "minecraft:impossible"
+    },
+    "rage": {
+      "trigger": "minecraft:impossible"
+    },
+    "rescue": {
+      "trigger": "minecraft:impossible"
+    },
+    "rest": {
+      "trigger": "minecraft:impossible"
+    },
+    "soul": {
+      "trigger": "minecraft:impossible"
+    },
+    "steady": {
+      "trigger": "minecraft:impossible"
+    }
+  },
+  "display": {
+    "announce_to_chat": true,
+    "description": "累计书写过全部 14 个身命卷字。",
+    "frame": "challenge",
+    "icon": {
+      "count": 1,
+      "id": "minecraft:heart_of_the_sea"
+    },
+    "title": "身命通明"
+  },
+  "requirements": [
+    [
+      "heart"
+    ],
+    [
+      "life_ward"
+    ],
+    [
+      "rescue"
+    ],
+    [
+      "rest"
+    ],
+    [
+      "endurance"
+    ],
+    [
+      "firm"
+    ],
+    [
+      "steady"
+    ],
+    [
+      "hidden"
+    ],
+    [
+      "bright"
+    ],
+    [
+      "cleanse"
+    ],
+    [
+      "force"
+    ],
+    [
+      "rage"
+    ],
+    [
+      "pulse"
+    ],
+    [
+      "soul"
+    ]
+  ]
+}

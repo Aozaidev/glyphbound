@@ -1,6 +1,6 @@
 {
-  "name": "Getting Started",
-  "description": "Controls, writing circles, valid glyphs, and the first safe steps.",
-  "icon": "aozainkmc:ink_brush",
+  "name": "Stage 0: First Steps",
+  "description": "Craft your first stave, learn writing, upgrading, and repair.",
+  "icon": "minecraft:ink_sac",
   "sortnum": 0
 }

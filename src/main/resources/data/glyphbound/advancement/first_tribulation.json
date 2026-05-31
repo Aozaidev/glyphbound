@@ -1,0 +1,22 @@
+{
+  "parent": "glyphbound:calamity_victory",
+  "criteria": {
+    "done": {
+      "trigger": "minecraft:impossible"
+    }
+  },
+  "display": {
+    "description": "首次触发渡劫。",
+    "frame": "task",
+    "icon": {
+      "count": 1,
+      "id": "minecraft:lightning_rod"
+    },
+    "title": "初渡劫"
+  },
+  "requirements": [
+    [
+      "done"
+    ]
+  ]
+}

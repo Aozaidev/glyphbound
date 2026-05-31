@@ -1,6 +1,6 @@
 {
-  "name": "入门",
-  "description": "从做第一根魔杖到第一次写字。先知道怎么开始，再看数值。",
+  "name": "第0阶段：起步",
+  "description": "先做第一根魔杖，学会打开法阵、写字、升级与修复。",
   "icon": "minecraft:ink_sac",
   "sortnum": 0
 }

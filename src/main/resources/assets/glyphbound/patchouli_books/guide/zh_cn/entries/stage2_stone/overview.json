@@ -1,0 +1,13 @@
+{
+  "name": "第2阶段总览",
+  "icon": "aozainkmc:stone_ink_staff",
+  "category": "glyphbound:stage2_stone",
+  "sortnum": 0,
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "title": "这一阶段做什么",
+      "text": "目标：探索更稳，开始承担风险。$(br2)$(l)稳$() 防击退和位移，$(l)息$() 脱战站定回血，$(l)明$() 提升敌意侦测精度，$(l)魄$() 死后回收部分掉落。$(br2)想打架再用 $(l)力$()、$(l)坚$()、$(l)墨$()。墨染场会强化怪物，别在没准备时乱开。"
+    }
+  ]
+}

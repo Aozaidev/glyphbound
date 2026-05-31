@@ -1,6 +1,15 @@
 {
   "modmenu.nameTranslation.glyphbound": "Glyphbound: Hanzi Magic",
   "item.glyphbound.ink_core": "Ink Core",
+  "block.glyphbound.ink_stone": "Ink Stone",
+  "block.glyphbound.polished_ink_stone": "Polished Ink Stone",
+  "block.glyphbound.ink_brick": "Ink Brick",
+  "block.glyphbound.ink_dirt": "Ink Dirt",
+  "block.glyphbound.ink_sand": "Wet Ink Silt",
+  "block.glyphbound.parchment_block": "Parchment Block",
+  "block.glyphbound.parchment_lantern": "Parchment Lantern",
+  "block.glyphbound.boundary_stele": "Boundary Stele",
+  "block.glyphbound.ink_realm_portal": "Ink Realm Portal",
   "book.glyphbound.guide.name": "Brushbound Primer",
-  "book.glyphbound.guide.landing_text": "A field guide to writing glyphs. Not all of them.$(br2)This book covers what currently works: crafting staves, the 14 body glyphs, Ink Arenas and tribulations, seals, ink fields, and terrain glyphs."
+  "book.glyphbound.guide.landing_text": "Read by stage instead of memorizing the whole system first.$(br2)Start with Stage 0, craft your first stave, then move through Stages 1-5: survival, exploration, field control, high-tier counterplay, and the Ink Realm.$(br2)Numbers and full glyph notes are kept in the final reference."
 }

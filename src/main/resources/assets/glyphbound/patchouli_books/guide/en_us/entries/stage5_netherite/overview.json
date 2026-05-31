@@ -1,0 +1,23 @@
+{
+  "name": "Stage 5 Overview",
+  "icon": "aozainkmc:netherite_ink_staff",
+  "category": "glyphbound:stage5_netherite",
+  "sortnum": 0,
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "title": "What To Do",
+      "text": "Goal: fill Netherite momentum, then write $(l)入$() to enter the Ink Realm.$(br2)The Ink Realm is an independent dimension. Current version: Forecourt (3x3 chunk main island) with Boundary Stele, Parchment Lanterns, and bamboo-plank structures. Island surrounded by Ink Sea."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Ink Sea Danger",
+      "text": "Ink Sea slows, deals continuous damage, and teleports you back to the island if you sink too deep.$(br2)Write $(l)出$() to return. Death does not respawn in the Ink Realm.$(br2)The Boundary Stele shows current version info."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "界 (Unstable)",
+      "text": "Writing $(l)界$() currently shows \"This boundary is not yet stable\".$(br2)Future versions will unlock instances and new districts within the Ink Realm."
+    }
+  ]
+}

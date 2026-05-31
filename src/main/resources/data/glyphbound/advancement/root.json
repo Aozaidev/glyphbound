@@ -1,0 +1,24 @@
+{
+  "criteria": {
+    "done": {
+      "trigger": "minecraft:impossible"
+    }
+  },
+  "display": {
+    "announce_to_chat": false,
+    "background": "minecraft:textures/block/blackstone.png",
+    "description": "获得任意魔杖。",
+    "frame": "task",
+    "icon": {
+      "count": 1,
+      "id": "aozainkmc:ink_brush"
+    },
+    "show_toast": true,
+    "title": "执笔引"
+  },
+  "requirements": [
+    [
+      "done"
+    ]
+  ]
+}

@@ -14,6 +14,7 @@ import com.glyphbound.core.MarkQueries;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Collection;
+import java.util.Iterator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -21,8 +22,12 @@ import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.core.Holder;
 import net.minecraft.core.particles.ParticleTypes;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.ListTag;
+import net.minecraft.nbt.NbtUtils;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
@@ -30,10 +35,13 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.tags.BlockTags;
+import net.minecraft.world.Container;
 import net.minecraft.world.effect.MobEffect;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
+import net.minecraft.world.entity.Display;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
@@ -43,7 +51,6 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.food.FoodData;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.LightLayer;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
@@ -51,6 +58,7 @@ import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
+import net.neoforged.neoforge.event.entity.EntityJoinLevelEvent;
 import net.neoforged.neoforge.event.entity.living.LivingDamageEvent;
 import net.neoforged.neoforge.event.entity.living.LivingDeathEvent;
 import net.neoforged.neoforge.event.entity.living.LivingDropsEvent;
@@ -94,9 +102,10 @@ public final class BodyGlyphEvents {
     private static final int HIDDEN_REFRESH_TICKS = 40;
     private static final int HIDDEN_MOB_FORGET_RADIUS = 5;
     private static final int BRIGHT_SENSE_INTERVAL = 40;
-    private static final int BRIGHT_RADIUS = 8;
-    private static final int PULSE_INTERVAL = 60;
-    private static final int PULSE_RADIUS = 18;
+    private static final int PULSE_INTERVAL = 40;
+    private static final int PULSE_PARTICLE_INTERVAL = 10;
+    private static final int PULSE_NIGHT_VISION_TICKS = ticksSecondsInt(15);
+    private static final String PULSE_DISPLAY_TAG = "glyphbound_pulse_display";
     private static final int CLEANSE_WINDOW_TICKS = 200;
     private static final long SOUL_RECOVERY_WINDOW_TICKS = 20L * 60L * 10L;
     private static final float SOUL_XP_RESERVE_RATIO = 0.5F;
@@ -115,6 +124,8 @@ public final class BodyGlyphEvents {
     private static final Map<UUID, SoulRecovery> soulRecoveries = new HashMap<>();
     private static final Map<UUID, FirmPressure> firmPressures = new HashMap<>();
     private static final Map<UUID, Integer> steadyBigKnockbackCharges = new HashMap<>();
+    private static final Map<PulseDisplayKey, PulseDisplay> pulseDisplays = new HashMap<>();
+    private static final List<PulseCleanupCheck> pulseCleanupChecks = new ArrayList<>();
 
     private BodyGlyphEvents() {
     }
@@ -179,6 +190,8 @@ public final class BodyGlyphEvents {
         firmPressures.entrySet().removeIf(entry -> entry.getValue().lastHitAt + 80L <= gameTime);
 
         for (ServerLevel level : event.getServer().getAllLevels()) {
+            tickPulseCleanupChecks(level, gameTime);
+            tickPulseDisplays(level, gameTime);
             for (ServerPlayer player : level.players()) {
                 tickBodyAttributes(player, gameTime);
                 tickRest(player, gameTime);
@@ -303,26 +316,27 @@ public final class BodyGlyphEvents {
     }
 
     private static void tickBrightSense(ServerPlayer player, ServerLevel level, long gameTime) {
-        if (!hasActiveTimedMark(player, "明", gameTime) || level.getBrightness(LightLayer.BLOCK, player.blockPosition()) > 7) {
+        if (!hasActiveTimedMark(player, "明", gameTime)) {
             return;
         }
 
-        int revealedMobs = 0;
-        BrightSpec spec = brightSpec(activeStaffTier(player, "明", gameTime));
-        int brightRadius = spec.radius();
-        AABB area = player.getBoundingBox().inflate(brightRadius);
-        if (spec.revealMobs()) {
-            for (Entity entity : level.getEntities(player, area)) {
-                if (entity instanceof LivingEntity living && entity instanceof Enemy) {
-                    living.addEffect(new MobEffectInstance(MobEffects.GLOWING, BRIGHT_SENSE_INTERVAL + 20, 0, true, false));
-                    revealedMobs++;
-                }
-            }
+        PulseSpec spec = lifeSenseSpec(activeStaffTier(player, "明", gameTime));
+        List<LivingEntity> hostiles = level.getEntitiesOfClass(
+            LivingEntity.class,
+            player.getBoundingBox().inflate(spec.radius()),
+            entity -> entity != player && entity.isAlive() && entity instanceof Enemy
+        );
+        if (hostiles.isEmpty()) {
+            player.displayClientMessage(Component.literal("明: 附近无敌意"), true);
+            return;
         }
 
-        int revealedBlocks = revealNearbyDarkClues(player, level, spec);
-        if (revealedMobs > 0 || revealedBlocks > 0) {
-            Glyphbound.LOGGER.debug("[明] revealed {} mobs and {} blocks near {}", revealedMobs, revealedBlocks, player.getGameProfile().getName());
+        PulseSummary summary = PulseSummary.from(player, hostiles);
+        player.displayClientMessage(Component.literal("明: " + summary.hostileDescription(spec)), true);
+        if (spec.detailLevel() >= 4) {
+            for (LivingEntity hostile : hostiles) {
+                hostile.addEffect(new MobEffectInstance(MobEffects.GLOWING, BRIGHT_SENSE_INTERVAL + 20, 0, true, false));
+            }
         }
     }
 
@@ -343,8 +357,240 @@ public final class BodyGlyphEvents {
         return revealed;
     }
 
+    private static int revealPulseClues(ServerPlayer player, ServerLevel level, BrightSpec spec, long expiresAt) {
+        int revealed = 0;
+        int radius = spec.radius();
+        BlockPos center = player.blockPosition();
+        for (BlockPos pos : BlockPos.betweenClosed(center.offset(-radius, -radius, -radius), center.offset(radius, radius, radius))) {
+            if (revealed >= spec.maxBlocks() || center.distSqr(pos) > radius * radius) {
+                continue;
+            }
+            BlockPos blockPos = pos.immutable();
+            BlockState state = level.getBlockState(blockPos);
+            if (!isBrightClue(state, level.getBlockEntity(blockPos), spec)) {
+                continue;
+            }
+
+            List<Vec3> exposedFaces = exposedFaceCenters(level, blockPos);
+            if (exposedFaces.isEmpty()) {
+                ensurePulseDisplay(level, blockPos, state, expiresAt);
+            } else {
+                removePulseDisplay(level.dimension(), blockPos);
+                for (Vec3 face : exposedFaces) {
+                    level.sendParticles(ParticleTypes.END_ROD, face.x, face.y, face.z, 1, 0.05D, 0.05D, 0.05D, 0.0D);
+                }
+            }
+            revealed++;
+        }
+        return revealed;
+    }
+
+    private static void ensurePulseDisplay(ServerLevel level, BlockPos pos, BlockState state, long expiresAt) {
+        PulseDisplayKey key = new PulseDisplayKey(level.dimension(), pos.immutable());
+        PulseDisplay existing = pulseDisplays.get(key);
+        if (existing != null && existing.display.isAlive() && existing.state.equals(state)) {
+            existing.expiresAt = Math.max(existing.expiresAt, expiresAt);
+            return;
+        }
+        removePulseDisplay(key);
+
+        Display.BlockDisplay display = EntityType.BLOCK_DISPLAY.create(level);
+        if (display == null) {
+            return;
+        }
+        display.load(blockDisplayTag(pos, state));
+        display.setPos(pos.getX(), pos.getY(), pos.getZ());
+        display.setInvisible(true);
+        display.setGlowingTag(true);
+        display.addTag(PULSE_DISPLAY_TAG);
+        level.addFreshEntity(display);
+        pulseDisplays.put(key, new PulseDisplay(display, state, expiresAt));
+    }
+
+    private static CompoundTag blockDisplayTag(BlockPos pos, BlockState state) {
+        CompoundTag tag = new CompoundTag();
+        ListTag position = new ListTag();
+        position.add(net.minecraft.nbt.DoubleTag.valueOf(pos.getX()));
+        position.add(net.minecraft.nbt.DoubleTag.valueOf(pos.getY()));
+        position.add(net.minecraft.nbt.DoubleTag.valueOf(pos.getZ()));
+        tag.put("Pos", position);
+
+        ListTag motion = new ListTag();
+        motion.add(net.minecraft.nbt.DoubleTag.valueOf(0.0D));
+        motion.add(net.minecraft.nbt.DoubleTag.valueOf(0.0D));
+        motion.add(net.minecraft.nbt.DoubleTag.valueOf(0.0D));
+        tag.put("Motion", motion);
+
+        ListTag rotation = new ListTag();
+        rotation.add(net.minecraft.nbt.FloatTag.valueOf(0.0F));
+        rotation.add(net.minecraft.nbt.FloatTag.valueOf(0.0F));
+        tag.put("Rotation", rotation);
+
+        tag.put("block_state", NbtUtils.writeBlockState(state));
+        return tag;
+    }
+
+    private static void removePulseDisplay(ResourceKey<Level> dimension, BlockPos pos) {
+        removePulseDisplay(new PulseDisplayKey(dimension, pos.immutable()));
+    }
+
+    private static void removePulseDisplay(PulseDisplayKey key) {
+        PulseDisplay existing = pulseDisplays.remove(key);
+        if (existing != null && existing.display.isAlive()) {
+            existing.display.discard();
+        }
+    }
+
+    private static void removePulseDisplaysNear(ServerLevel level, BlockPos center, int radius) {
+        for (Display.BlockDisplay display : level.getEntitiesOfClass(
+            Display.BlockDisplay.class,
+            new AABB(center).inflate(radius),
+            entity -> entity.getTags().contains(PULSE_DISPLAY_TAG)
+        )) {
+            display.discard();
+        }
+
+        Iterator<Map.Entry<PulseDisplayKey, PulseDisplay>> iterator = pulseDisplays.entrySet().iterator();
+        while (iterator.hasNext()) {
+            Map.Entry<PulseDisplayKey, PulseDisplay> entry = iterator.next();
+            PulseDisplayKey key = entry.getKey();
+            if (!key.dimension.equals(level.dimension()) || key.pos.distSqr(center) > radius * radius) {
+                continue;
+            }
+            PulseDisplay display = entry.getValue();
+            if (display.display.isAlive()) {
+                display.display.discard();
+            }
+            iterator.remove();
+        }
+    }
+
+    private static void queuePulseCleanup(ServerLevel level, BlockPos pos, long gameTime) {
+        pulseCleanupChecks.add(new PulseCleanupCheck(level.dimension(), pos.immutable(), gameTime + 1L));
+    }
+
+    private static void tickPulseCleanupChecks(ServerLevel level, long gameTime) {
+        Iterator<PulseCleanupCheck> iterator = pulseCleanupChecks.iterator();
+        while (iterator.hasNext()) {
+            PulseCleanupCheck check = iterator.next();
+            if (!check.dimension.equals(level.dimension())) {
+                continue;
+            }
+            if (check.runAt > gameTime) {
+                continue;
+            }
+            removePulseDisplaysNear(level, check.pos, 2);
+            refreshPulseDisplaysNear(level, check.pos, 4, gameTime);
+            iterator.remove();
+        }
+    }
+
+    private static void refreshPulseDisplaysNear(ServerLevel level, BlockPos center, int radius, long gameTime) {
+        for (ServerPlayer player : level.players()) {
+            if (!hasActiveTimedMark(player, "脉", gameTime) || player.blockPosition().distSqr(center) > 48 * 48) {
+                continue;
+            }
+            BrightSpec spec = brightSpec(activeStaffTier(player, "脉", gameTime));
+            long expiresAt = latestActiveMarkExpiry(player, "脉", gameTime);
+            int refreshed = 0;
+            for (BlockPos pos : BlockPos.betweenClosed(center.offset(-radius, -radius, -radius), center.offset(radius, radius, radius))) {
+                if (refreshed >= spec.maxBlocks()) {
+                    break;
+                }
+                BlockPos blockPos = pos.immutable();
+                BlockState state = level.getBlockState(blockPos);
+                if (!isBrightClue(state, level.getBlockEntity(blockPos), spec)) {
+                    removePulseDisplay(level.dimension(), blockPos);
+                    continue;
+                }
+                if (exposedFaceCenters(level, blockPos).isEmpty()) {
+                    ensurePulseDisplay(level, blockPos, state, expiresAt);
+                } else {
+                    removePulseDisplay(level.dimension(), blockPos);
+                }
+                refreshed++;
+            }
+        }
+    }
+
+    private static void tickPulseDisplays(ServerLevel level, long gameTime) {
+        Iterator<Map.Entry<PulseDisplayKey, PulseDisplay>> iterator = pulseDisplays.entrySet().iterator();
+        while (iterator.hasNext()) {
+            Map.Entry<PulseDisplayKey, PulseDisplay> entry = iterator.next();
+            PulseDisplayKey key = entry.getKey();
+            if (!key.dimension.equals(level.dimension())) {
+                continue;
+            }
+            PulseDisplay display = entry.getValue();
+            if (display.expiresAt <= gameTime
+                || !display.display.isAlive()
+                || !level.getBlockState(key.pos).equals(display.state)
+                || !exposedFaceCenters(level, key.pos).isEmpty()) {
+                if (display.display.isAlive()) {
+                    display.display.discard();
+                }
+                iterator.remove();
+            }
+        }
+        if (gameTime % PULSE_PARTICLE_INTERVAL == 0L) {
+            tickPulseExposedParticles(level, gameTime);
+        }
+    }
+
+    private static void tickPulseExposedParticles(ServerLevel level, long gameTime) {
+        for (ServerPlayer player : level.players()) {
+            if (!hasActiveTimedMark(player, "脉", gameTime)) {
+                continue;
+            }
+            BrightSpec spec = brightSpec(activeStaffTier(player, "脉", gameTime));
+            BlockPos center = player.blockPosition();
+            int revealed = 0;
+            int radius = spec.radius();
+            for (BlockPos pos : BlockPos.betweenClosed(center.offset(-radius, -radius, -radius), center.offset(radius, radius, radius))) {
+                if (revealed >= spec.maxBlocks() || center.distSqr(pos) > radius * radius) {
+                    continue;
+                }
+                BlockPos blockPos = pos.immutable();
+                if (!isBrightClue(level.getBlockState(blockPos), level.getBlockEntity(blockPos), spec)) {
+                    continue;
+                }
+                List<Vec3> exposedFaces = exposedFaceCenters(level, blockPos);
+                if (exposedFaces.isEmpty()) {
+                    continue;
+                }
+                for (Vec3 face : exposedFaces) {
+                    level.sendParticles(ParticleTypes.END_ROD, face.x, face.y, face.z, 1, 0.05D, 0.05D, 0.05D, 0.0D);
+                }
+                revealed++;
+            }
+        }
+    }
+
+    private static List<Vec3> exposedFaceCenters(ServerLevel level, BlockPos pos) {
+        List<Vec3> result = new ArrayList<>();
+        for (Direction direction : Direction.values()) {
+            BlockPos adjacent = pos.relative(direction);
+            BlockState adjacentState = level.getBlockState(adjacent);
+            if (adjacentState.isAir() || adjacentState.is(Blocks.WATER)) {
+                result.add(faceCenter(pos, direction));
+            }
+        }
+        return result;
+    }
+
+    private static Vec3 faceCenter(BlockPos pos, Direction direction) {
+        return switch (direction) {
+            case UP -> new Vec3(pos.getX() + 0.5D, pos.getY() + 1.0D, pos.getZ() + 0.5D);
+            case DOWN -> new Vec3(pos.getX() + 0.5D, pos.getY(), pos.getZ() + 0.5D);
+            case NORTH -> new Vec3(pos.getX() + 0.5D, pos.getY() + 0.5D, pos.getZ());
+            case SOUTH -> new Vec3(pos.getX() + 0.5D, pos.getY() + 0.5D, pos.getZ() + 1.0D);
+            case EAST -> new Vec3(pos.getX() + 1.0D, pos.getY() + 0.5D, pos.getZ() + 0.5D);
+            case WEST -> new Vec3(pos.getX(), pos.getY() + 0.5D, pos.getZ() + 0.5D);
+        };
+    }
+
     private static boolean isBrightClue(BlockState state, BlockEntity blockEntity, BrightSpec spec) {
-        return spec.revealContainers() && blockEntity != null
+        return spec.revealContainers() && blockEntity instanceof Container
             || spec.revealTraps() && (state.is(Blocks.TRIPWIRE) || state.is(Blocks.TRIPWIRE_HOOK))
             || spec.revealCommonOres() && (state.is(BlockTags.COAL_ORES) || state.is(BlockTags.COPPER_ORES) || state.is(BlockTags.IRON_ORES))
             || spec.revealRareOres() && (
@@ -353,6 +599,15 @@ public final class BodyGlyphEvents {
                     || state.is(BlockTags.LAPIS_ORES)
                     || state.is(BlockTags.EMERALD_ORES)
                     || state.is(BlockTags.DIAMOND_ORES)
+                    || state.is(Blocks.NETHER_GOLD_ORE)
+                    || state.is(Blocks.NETHER_QUARTZ_ORE)
+                    || state.is(Blocks.ANCIENT_DEBRIS)
+                    || state.is(Blocks.SPAWNER)
+                    || state.is(Blocks.TRIAL_SPAWNER)
+                    || state.is(Blocks.VAULT)
+                    || state.is(Blocks.DECORATED_POT)
+                    || state.is(Blocks.SUSPICIOUS_SAND)
+                    || state.is(Blocks.SUSPICIOUS_GRAVEL)
             );
     }
 
@@ -361,18 +616,24 @@ public final class BodyGlyphEvents {
             return;
         }
 
-        List<LivingEntity> entities = level.getEntitiesOfClass(
+        BrightSpec spec = brightSpec(activeStaffTier(player, "脉", gameTime));
+        player.addEffect(new MobEffectInstance(MobEffects.NIGHT_VISION, PULSE_NIGHT_VISION_TICKS, 0, true, false));
+
+        int revealedBlocks = revealPulseClues(player, level, spec, latestActiveMarkExpiry(player, "脉", gameTime));
+        int hostileCount = 0;
+        List<LivingEntity> hostiles = level.getEntitiesOfClass(
             LivingEntity.class,
-            player.getBoundingBox().inflate(pulseSpec(activeStaffTier(player, "脉", gameTime)).radius()),
-            entity -> entity != player && entity.isAlive()
+            player.getBoundingBox().inflate(spec.radius()),
+            entity -> entity != player && entity.isAlive() && entity instanceof Enemy
         );
-        if (entities.isEmpty()) {
-            player.displayClientMessage(Component.literal("脉: 周围很静"), true);
-            return;
+        if (spec.revealMobs()) {
+            for (LivingEntity hostile : hostiles) {
+                hostile.addEffect(new MobEffectInstance(MobEffects.GLOWING, PULSE_INTERVAL + 60, 0, true, false));
+                hostileCount++;
+            }
         }
 
-        PulseSummary summary = PulseSummary.from(player, entities);
-        player.displayClientMessage(Component.literal("脉: " + summary.description(pulseSpec(activeStaffTier(player, "脉", gameTime)))), true);
+        player.displayClientMessage(Component.literal("脉: 显现 " + revealedBlocks + " 处线索 / " + hostileCount + " 个敌意"), true);
     }
 
     @SubscribeEvent
@@ -460,11 +721,23 @@ public final class BodyGlyphEvents {
     @SubscribeEvent
     public static void onPlayerLoggedOut(PlayerEvent.PlayerLoggedOutEvent event) {
         clearPlayerBodyState(event.getEntity());
+        clearPulseDisplays();
     }
 
     @SubscribeEvent
     public static void onServerStopped(ServerStoppedEvent event) {
         clearAllBodyState(event.getServer());
+    }
+
+    @SubscribeEvent
+    public static void onEntityJoinLevel(EntityJoinLevelEvent event) {
+        if (!event.getLevel().isClientSide()
+            && event.loadedFromDisk()
+            && event.getEntity() instanceof Display.BlockDisplay display
+            && display.getTags().contains(PULSE_DISPLAY_TAG)) {
+            display.discard();
+            event.setCanceled(true);
+        }
     }
 
     private static void handleSalvation(ServerPlayer player, LivingDamageEvent.Pre event, long gameTime) {
@@ -664,6 +937,16 @@ public final class BodyGlyphEvents {
     @SubscribeEvent
     public static void onBlockBreak(BlockEvent.BreakEvent event) {
         breakHidden(event.getPlayer(), event.getLevel().getLevelData().getGameTime());
+        if (event.getLevel() instanceof ServerLevel level) {
+            long gameTime = level.getGameTime();
+            removePulseDisplay(level.dimension(), event.getPos());
+            removePulseDisplaysNear(level, event.getPos(), 2);
+            queuePulseCleanup(level, event.getPos(), gameTime);
+            for (Direction direction : Direction.values()) {
+                removePulseDisplay(level.dimension(), event.getPos().relative(direction));
+                queuePulseCleanup(level, event.getPos().relative(direction), gameTime);
+            }
+        }
     }
 
     private static void breakHidden(Player player, long gameTime) {
@@ -891,7 +1174,38 @@ public final class BodyGlyphEvents {
         soulRecoveries.clear();
         firmPressures.clear();
         steadyBigKnockbackCharges.clear();
+        pulseCleanupChecks.clear();
+        clearPulseDisplays(server);
         AozaiInkApi.marks().clearAll();
+    }
+
+    private static void clearPulseDisplays() {
+        for (PulseDisplay display : pulseDisplays.values()) {
+            if (display.display.isAlive()) {
+                display.display.discard();
+            }
+        }
+        pulseDisplays.clear();
+    }
+
+    private static void clearPulseDisplays(MinecraftServer server) {
+        clearPulseDisplays();
+        for (ServerLevel level : server.getAllLevels()) {
+            for (Display.BlockDisplay display : level.getEntitiesOfClass(
+                Display.BlockDisplay.class,
+                new AABB(
+                    -3.0E7D,
+                    level.getMinBuildHeight(),
+                    -3.0E7D,
+                    3.0E7D,
+                    level.getMaxBuildHeight(),
+                    3.0E7D
+                ),
+                entity -> entity.getTags().contains(PULSE_DISPLAY_TAG)
+            )) {
+                display.discard();
+            }
+        }
     }
 
     private static void clearPlayerBodyAttributes(Player player) {
@@ -940,7 +1254,7 @@ public final class BodyGlyphEvents {
         if (spec.rank() == state.rank) {
             state.bonus = Math.min(Math.max(state.bonus, 0.0D) + spec.bonusPerCast(), spec.maxBonusHealth());
         }
-        state.expiresAt = Math.max(state.expiresAt, expiresAt);
+        state.expiresAt = expiresAt;
         if (spec.regenTicks() > 0) {
             player.addEffect(new MobEffectInstance(MobEffects.REGENERATION, spec.regenTicks(), 1, true, true));
         }
@@ -990,13 +1304,11 @@ public final class BodyGlyphEvents {
             return null;
         }
         return switch (staffTier) {
-            case WOOD -> new LifeSpec("心", staffRank(staffTier), 6.0D, 10.0D, ticksSeconds(90), 0);
-            case STONE -> new LifeSpec("心", staffRank(staffTier), 8.0D, 12.0D, ticksMinutes(2), 0);
-            case COPPER -> new LifeSpec("心", staffRank(staffTier), 10.0D, 16.0D, ticksMinutes(3), 0);
-            case IRON -> new LifeSpec("心", staffRank(staffTier), 10.0D, 20.0D, ticksMinutes(5), ticksSecondsInt(3));
-            case GOLD -> new LifeSpec("心", staffRank(staffTier), 12.0D, 20.0D, ticksMinutes(3), ticksSecondsInt(5));
-            case DIAMOND -> new LifeSpec("心", staffRank(staffTier), 12.0D, 20.0D, ticksMinutes(8), ticksSecondsInt(8));
-            case NETHERITE -> new LifeSpec("心", staffRank(staffTier), 12.0D, 20.0D, ticksMinutes(10), ticksSecondsInt(10));
+            case WOOD -> new LifeSpec("心", staffRank(staffTier), 2.0D, 10.0D, ticksSeconds(90), 0);
+            case STONE -> new LifeSpec("心", staffRank(staffTier), 4.0D, 20.0D, ticksMinutes(2), 0);
+            case COPPER, IRON -> new LifeSpec("心", staffRank(staffTier), 6.0D, 30.0D, ticksMinutes(5), ticksSecondsInt(3));
+            case GOLD, DIAMOND -> new LifeSpec("心", staffRank(staffTier), 8.0D, 40.0D, ticksMinutes(8), ticksSecondsInt(8));
+            case NETHERITE -> new LifeSpec("心", staffRank(staffTier), 10.0D, 60.0D, ticksMinutes(10), ticksSecondsInt(10));
         };
     }
 
@@ -1005,10 +1317,8 @@ public final class BodyGlyphEvents {
             return switch (staffTier) {
                 case WOOD -> new SalvationSpec("命", staffRank(staffTier), ticksMinutes(5), ticksSecondsInt(1), 0.0F);
                 case STONE -> new SalvationSpec("命", staffRank(staffTier), ticksMinutes(8), ticksSecondsInt(2), 0.0F);
-                case COPPER -> new SalvationSpec("命", staffRank(staffTier), ticksMinutes(10), ticksSecondsInt(2), 0.0F);
-                case IRON -> new SalvationSpec("命", staffRank(staffTier), ticksMinutes(10), ticksSecondsInt(3), 0.0F);
-                case GOLD -> new SalvationSpec("命", staffRank(staffTier), ticksMinutes(6), ticksSecondsInt(3), 0.0F);
-                case DIAMOND -> new SalvationSpec("命", staffRank(staffTier), ticksMinutes(10), ticksSecondsInt(4), 0.0F);
+                case COPPER, IRON -> new SalvationSpec("命", staffRank(staffTier), ticksMinutes(10), ticksSecondsInt(3), 0.0F);
+                case GOLD, DIAMOND -> new SalvationSpec("命", staffRank(staffTier), ticksMinutes(10), ticksSecondsInt(4), 0.0F);
                 case NETHERITE -> new SalvationSpec("命", staffRank(staffTier), ticksMinutes(10), ticksSecondsInt(4), 0.0F);
             };
         }
@@ -1016,10 +1326,8 @@ public final class BodyGlyphEvents {
             return switch (staffTier) {
                 case WOOD -> null;
                 case STONE -> new SalvationSpec("救", staffRank(staffTier), ticksMinutes(5), ticksSecondsInt(3), 0.25F);
-                case COPPER -> new SalvationSpec("救", staffRank(staffTier), ticksMinutes(8), ticksSecondsInt(4), 0.40F);
-                case IRON -> new SalvationSpec("救", staffRank(staffTier), ticksMinutes(10), ticksSecondsInt(5), 0.60F);
-                case GOLD -> new SalvationSpec("救", staffRank(staffTier), ticksMinutes(6), ticksSecondsInt(5), 0.60F);
-                case DIAMOND -> new SalvationSpec("救", staffRank(staffTier), ticksMinutes(10), ticksSecondsInt(5), 0.80F);
+                case COPPER, IRON -> new SalvationSpec("救", staffRank(staffTier), ticksMinutes(10), ticksSecondsInt(5), 0.60F);
+                case GOLD, DIAMOND -> new SalvationSpec("救", staffRank(staffTier), ticksMinutes(10), ticksSecondsInt(5), 0.80F);
                 case NETHERITE -> new SalvationSpec("救", staffRank(staffTier), ticksMinutes(10), ticksSecondsInt(5), 1.0F);
             };
         }
@@ -1033,10 +1341,8 @@ public final class BodyGlyphEvents {
         return switch (staffTier) {
             case WOOD -> new InkWoundSpec("忍", staffRank(staffTier), ticksMinutes(10), 0.25F, 6.0F);
             case STONE -> new InkWoundSpec("忍", staffRank(staffTier), ticksMinutes(10), 0.35F, 8.0F);
-            case COPPER -> new InkWoundSpec("忍", staffRank(staffTier), ticksMinutes(10), 0.45F, 10.0F);
-            case IRON -> new InkWoundSpec("忍", staffRank(staffTier), ticksMinutes(10), 0.55F, 14.0F);
-            case GOLD -> new InkWoundSpec("忍", staffRank(staffTier), ticksMinutes(6), 0.60F, 12.0F);
-            case DIAMOND -> new InkWoundSpec("忍", staffRank(staffTier), ticksMinutes(10), 0.65F, 18.0F);
+            case COPPER, IRON -> new InkWoundSpec("忍", staffRank(staffTier), ticksMinutes(10), 0.55F, 14.0F);
+            case GOLD, DIAMOND -> new InkWoundSpec("忍", staffRank(staffTier), ticksMinutes(10), 0.65F, 18.0F);
             case NETHERITE -> new InkWoundSpec("忍", staffRank(staffTier), ticksMinutes(10), 0.70F, 20.0F);
         };
     }
@@ -1048,10 +1354,8 @@ public final class BodyGlyphEvents {
         return switch (staffTier) {
             case WOOD -> new CleanseSpec("净", 4.0F, 1);
             case STONE -> new CleanseSpec("净", 6.0F, 1);
-            case COPPER -> new CleanseSpec("净", 8.0F, 2);
-            case IRON -> new CleanseSpec("净", 12.0F, 3);
-            case GOLD -> new CleanseSpec("净", 14.0F, 3);
-            case DIAMOND -> new CleanseSpec("净", 18.0F, 4);
+            case COPPER, IRON -> new CleanseSpec("净", 12.0F, 3);
+            case GOLD, DIAMOND -> new CleanseSpec("净", 18.0F, 4);
             case NETHERITE -> new CleanseSpec("净", 22.0F, 5);
         };
     }
@@ -1061,17 +1365,15 @@ public final class BodyGlyphEvents {
             return switch (staffTier) {
                 case WOOD -> new RageSpec("力", staffRank(staffTier), ticksMinutes(5), 0.0D, 0.20D, 0.0D, 1.0F, 0.005D, false, 0.0D, 0.0D, 0.0F);
                 case STONE -> new RageSpec("力", staffRank(staffTier), ticksMinutes(6), 0.0D, 0.30D, 0.0D, 1.0F, 0.005D, false, 0.0D, 0.0D, 0.0F);
-                case COPPER -> new RageSpec("力", staffRank(staffTier), ticksMinutes(8), 0.0D, 0.40D, 0.0D, 1.0F, 0.005D, false, 0.0D, 0.0D, 0.0F);
-                case IRON -> new RageSpec("力", staffRank(staffTier), ticksMinutes(10), 0.0D, 0.50D, 0.0D, 1.0F, 0.005D, false, 0.0D, 0.0D, 0.0F);
-                case GOLD -> new RageSpec("力", staffRank(staffTier), ticksMinutes(5), 0.0D, 0.60D, 0.0D, 1.0F, 0.005D, false, 0.0D, 0.0D, 0.0F);
-                case DIAMOND -> new RageSpec("力", staffRank(staffTier), ticksMinutes(10), 0.0D, 0.60D, 0.0D, 1.0F, 0.005D, true, 3.0D, 1.0D, 0.0F);
+                case COPPER, IRON -> new RageSpec("力", staffRank(staffTier), ticksMinutes(10), 0.0D, 0.50D, 0.0D, 1.0F, 0.005D, false, 0.0D, 0.0D, 0.0F);
+                case GOLD, DIAMOND -> new RageSpec("力", staffRank(staffTier), ticksMinutes(10), 0.0D, 0.60D, 0.0D, 1.0F, 0.005D, true, 3.0D, 1.0D, 0.0F);
                 case NETHERITE -> new RageSpec("力", staffRank(staffTier), ticksMinutes(10), 0.0D, 0.60D, 0.0D, 1.0F, 0.005D, true, 3.0D, 1.2D, 0.0F);
             };
         }
         if ("怒".equals(word)) {
             return switch (staffTier) {
-                case WOOD, STONE, COPPER, IRON, GOLD -> null;
-                case DIAMOND -> new RageSpec("怒", staffRank(staffTier), ticksMinutes(10), 0.65D, 1.25D, 0.01D, 5.0F, 0.05D, true, 4.0D, 1.8D, 2.0F);
+                case WOOD, STONE, COPPER, IRON -> null;
+                case GOLD, DIAMOND -> new RageSpec("怒", staffRank(staffTier), ticksMinutes(10), 0.65D, 1.25D, 0.01D, 5.0F, 0.05D, true, 4.0D, 1.8D, 2.0F);
                 case NETHERITE -> new RageSpec("怒", staffRank(staffTier), ticksMinutes(10), 0.70D, 1.50D, 0.01D, 5.0F, 0.05D, true, 4.0D, 2.0D, 2.0F);
             };
         }
@@ -1082,10 +1384,8 @@ public final class BodyGlyphEvents {
         return switch (staffTier) {
             case WOOD -> new SoulSpec(0.20F, 0.20F);
             case STONE -> new SoulSpec(0.30F, 0.30F);
-            case COPPER -> new SoulSpec(0.40F, 0.40F);
-            case IRON -> new SoulSpec(0.50F, 0.50F);
-            case GOLD -> new SoulSpec(0.60F, 0.60F);
-            case DIAMOND -> new SoulSpec(0.70F, 0.70F);
+            case COPPER, IRON -> new SoulSpec(0.50F, 0.50F);
+            case GOLD, DIAMOND -> new SoulSpec(0.70F, 0.70F);
             case NETHERITE -> new SoulSpec(0.80F, 0.80F);
         };
     }
@@ -1094,10 +1394,8 @@ public final class BodyGlyphEvents {
         return switch (staffTier) {
             case WOOD -> new RestSpec(40, 1, 0.15F, 1.0F, 1.5F);
             case STONE -> new RestSpec(36, 1, 0.2F, 1.0F, 1.25F);
-            case COPPER -> new RestSpec(34, 1, 0.35F, 1.0F, 1.1F);
-            case IRON -> new RestSpec(30, 1, 0.35F, 1.5F, 1.0F);
-            case GOLD -> new RestSpec(24, 1, 0.45F, 2.0F, 1.25F);
-            case DIAMOND -> new RestSpec(28, 1, 0.45F, 1.5F, 0.8F);
+            case COPPER, IRON -> new RestSpec(30, 1, 0.35F, 1.5F, 1.0F);
+            case GOLD, DIAMOND -> new RestSpec(28, 1, 0.45F, 1.5F, 0.8F);
             case NETHERITE -> new RestSpec(24, 1, 0.55F, 2.0F, 0.65F);
         };
     }
@@ -1106,10 +1404,8 @@ public final class BodyGlyphEvents {
         return switch (staffTier) {
             case WOOD -> new SteadySpec(0.55F, 0.65D, 0);
             case STONE -> new SteadySpec(0.45F, 0.55D, 0);
-            case COPPER -> new SteadySpec(0.35F, 0.45D, 0);
-            case IRON -> new SteadySpec(0.25F, 0.35D, 0);
-            case GOLD -> new SteadySpec(0.18F, 0.25D, 0);
-            case DIAMOND -> new SteadySpec(0.20F, 0.25D, 1);
+            case COPPER, IRON -> new SteadySpec(0.25F, 0.35D, 0);
+            case GOLD, DIAMOND -> new SteadySpec(0.20F, 0.25D, 1);
             case NETHERITE -> new SteadySpec(0.15F, 0.20D, 2);
         };
     }
@@ -1118,10 +1414,8 @@ public final class BodyGlyphEvents {
         return switch (staffTier) {
             case WOOD -> new HiddenSpec(12.0D, 12.0D);
             case STONE -> new HiddenSpec(14.0D, 10.0D);
-            case COPPER -> new HiddenSpec(16.0D, 8.0D);
-            case IRON -> new HiddenSpec(18.0D, 6.0D);
-            case GOLD -> new HiddenSpec(20.0D, 5.0D);
-            case DIAMOND -> new HiddenSpec(22.0D, 4.0D);
+            case COPPER, IRON -> new HiddenSpec(18.0D, 6.0D);
+            case GOLD, DIAMOND -> new HiddenSpec(22.0D, 4.0D);
             case NETHERITE -> new HiddenSpec(24.0D, 3.0D);
         };
     }
@@ -1129,24 +1423,20 @@ public final class BodyGlyphEvents {
     private static BrightSpec brightSpec(InkStaffTier staffTier) {
         return switch (staffTier) {
             case WOOD -> new BrightSpec(6, 4, true, false, false, false, false);
-            case STONE -> new BrightSpec(7, 6, true, true, false, false, false);
-            case COPPER -> new BrightSpec(8, 8, true, true, true, false, false);
-            case IRON -> new BrightSpec(10, 10, true, true, true, true, true);
-            case GOLD -> new BrightSpec(10, 12, true, true, true, true, true);
-            case DIAMOND -> new BrightSpec(12, 14, true, true, true, true, true);
-            case NETHERITE -> new BrightSpec(14, 16, true, true, true, true, true);
+            case STONE -> new BrightSpec(8, 6, true, true, false, false, false);
+            case COPPER, IRON -> new BrightSpec(12, 12, true, true, true, true, true);
+            case GOLD, DIAMOND -> new BrightSpec(16, 18, true, true, true, true, true);
+            case NETHERITE -> new BrightSpec(20, 24, true, true, true, true, true);
         };
     }
 
-    private static PulseSpec pulseSpec(InkStaffTier staffTier) {
+    private static PulseSpec lifeSenseSpec(InkStaffTier staffTier) {
         return switch (staffTier) {
-            case WOOD -> new PulseSpec(8, 1);
-            case STONE -> new PulseSpec(12, 2);
-            case COPPER -> new PulseSpec(16, 3);
-            case IRON -> new PulseSpec(18, 4);
-            case GOLD -> new PulseSpec(18, 5);
-            case DIAMOND -> new PulseSpec(24, 5);
-            case NETHERITE -> new PulseSpec(28, 6);
+            case WOOD -> new PulseSpec(10, 2);
+            case STONE -> new PulseSpec(14, 3);
+            case COPPER, IRON -> new PulseSpec(18, 4);
+            case GOLD, DIAMOND -> new PulseSpec(24, 5);
+            case NETHERITE -> new PulseSpec(30, 6);
         };
     }
 
@@ -1196,10 +1486,9 @@ public final class BodyGlyphEvents {
         return switch (tier) {
             case WOOD -> 0;
             case STONE -> 1;
-            case COPPER -> 2;
-            case IRON, GOLD -> 3;
-            case DIAMOND -> 4;
-            case NETHERITE -> 5;
+            case COPPER, IRON -> 2;
+            case GOLD, DIAMOND -> 3;
+            case NETHERITE -> 4;
         };
     }
 
@@ -1245,8 +1534,23 @@ public final class BodyGlyphEvents {
         return false;
     }
 
-    private static long activeUntil(InkMark mark) {
+    public static long activeUntil(InkMark mark) {
         return mark.bornGameTime() + durationTicks(mark.word(), InkStaffMetadata.tier(mark), mark.ttlTicks());
+    }
+
+    public static long effectiveActiveUntil(Player player, InkMark mark, long gameTime) {
+        long activeUntil = activeUntil(mark);
+        if (activeUntil <= gameTime || player == null || mark.target().entityUuid() == null || !player.getUUID().equals(mark.target().entityUuid())) {
+            return activeUntil;
+        }
+        UUID playerId = player.getUUID();
+        if ("息".equals(mark.word()) && restBrokenUntil.getOrDefault(playerId, 0L) > gameTime) {
+            return gameTime;
+        }
+        if ("隐".equals(mark.word()) && hiddenBrokenUntil.getOrDefault(playerId, 0L) > gameTime) {
+            return gameTime;
+        }
+        return activeUntil;
     }
 
     private static long durationTicks(String word, InkStaffTier tier, long fallbackTicks) {
@@ -1313,13 +1617,13 @@ public final class BodyGlyphEvents {
                 case NETHERITE -> ticksMinutes(3);
             };
             case "脉" -> switch (tier) {
-                case WOOD -> ticksSeconds(20);
-                case STONE -> ticksSeconds(30);
-                case COPPER -> ticksSeconds(45);
-                case IRON -> ticksMinutes(1);
-                case GOLD -> ticksSeconds(30);
-                case DIAMOND -> ticksSeconds(90);
-                case NETHERITE -> ticksMinutes(2);
+                case WOOD -> ticksSeconds(30);
+                case STONE -> ticksSeconds(45);
+                case COPPER -> ticksMinutes(1);
+                case IRON -> ticksSeconds(90);
+                case GOLD -> ticksSeconds(45);
+                case DIAMOND -> ticksMinutes(2);
+                case NETHERITE -> ticksMinutes(3);
             };
             default -> fallbackTicks;
         };
@@ -1446,6 +1750,24 @@ public final class BodyGlyphEvents {
     private static final class FirmPressure {
         private int hits;
         private long lastHitAt;
+    }
+
+    private static final class PulseDisplay {
+        private final Display.BlockDisplay display;
+        private final BlockState state;
+        private long expiresAt;
+
+        private PulseDisplay(Display.BlockDisplay display, BlockState state, long expiresAt) {
+            this.display = display;
+            this.state = state;
+            this.expiresAt = expiresAt;
+        }
+    }
+
+    private record PulseDisplayKey(ResourceKey<Level> dimension, BlockPos pos) {
+    }
+
+    private record PulseCleanupCheck(ResourceKey<Level> dimension, BlockPos pos, long runAt) {
     }
 
     private static final class RageState {
@@ -1582,6 +1904,16 @@ public final class BodyGlyphEvents {
                     String mood = hostile > 0 ? hostile + " 敌意 / " : "";
                     yield mood + total + " 生命，最近在" + direction + "约 " + nearDistance + " 格";
                 }
+            };
+        }
+
+        private String hostileDescription(PulseSpec spec) {
+            return switch (spec.detailLevel()) {
+                case 1 -> total > 0 ? "附近有敌意" : "附近无敌意";
+                case 2 -> "敌意在" + direction + "侧";
+                case 3 -> total + " 个敌意，最近在" + direction;
+                case 4 -> total + " 个敌意，最近约 " + nearDistance + " 格";
+                default -> total + " 个敌意，最近在" + direction + "约 " + nearDistance + " 格";
             };
         }
 

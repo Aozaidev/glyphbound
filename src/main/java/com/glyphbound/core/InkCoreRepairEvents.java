@@ -41,6 +41,6 @@ public final class InkCoreRepairEvents {
         output.setDamageValue(Math.max(0, damage - repairPerCore * coresUsed));
         event.setOutput(output);
         event.setMaterialCost(coresUsed);
-        event.setCost(Math.max(1, tier.ordinal() + 1 + coresUsed));
+        event.setCost(Math.max(1, StaffTierUtils.tierRank(tier) + 1 + coresUsed));
     }
 }

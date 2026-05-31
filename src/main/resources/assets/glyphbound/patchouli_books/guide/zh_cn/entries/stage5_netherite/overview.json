@@ -1,0 +1,23 @@
+{
+  "name": "第5阶段总览",
+  "icon": "aozainkmc:netherite_ink_staff",
+  "category": "glyphbound:stage5_netherite",
+  "sortnum": 0,
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "title": "这一阶段做什么",
+      "text": "目标：把下界合金杖笔势刷满，然后写 $(l)入$() 打开墨界入口。$(br2)墨界是独立维度，当前版本开放前庭（3x3 chunk 主岛），有界碑、宣纸灯和竹板结构。岛外是墨海。"
+    },
+    {
+      "type": "patchouli:text",
+      "title": "墨海危险",
+      "text": "墨海中减速、持续受伤、沉深传回主岛。$(br2)写 $(l)出$() 返回来处。死亡不在墨界复活。$(br2)界碑会显示当前版本信息。"
+    },
+    {
+      "type": "patchouli:text",
+      "title": "界（未稳）",
+      "text": "写 $(l)界$() 当前提示\"此界未稳\"。$(br2)未来将在墨界中展开副本和新区块。"
+    }
+  ]
+}

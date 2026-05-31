@@ -1,0 +1,22 @@
+{
+  "parent": "glyphbound:ink_realm_entry",
+  "criteria": {
+    "done": {
+      "trigger": "minecraft:impossible"
+    }
+  },
+  "display": {
+    "description": "从墨界返回。",
+    "frame": "task",
+    "icon": {
+      "count": 1,
+      "id": "minecraft:ender_pearl"
+    },
+    "title": "归途"
+  },
+  "requirements": [
+    [
+      "done"
+    ]
+  ]
+}

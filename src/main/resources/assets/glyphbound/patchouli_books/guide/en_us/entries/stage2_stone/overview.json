@@ -1,0 +1,18 @@
+{
+  "name": "Stage 2 Overview",
+  "icon": "aozainkmc:stone_ink_staff",
+  "category": "glyphbound:stage2_stone",
+  "sortnum": 0,
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "title": "What To Do",
+      "text": "Goal: get a steadier exploration kit. Stone adds displacement resistance, recovery, sharper hostile sensing, retaliation, and the first ink-field play.$(br2)Key glyphs: $(l)稳$(), $(l)息$(), $(l)明$(), $(l)力$(), $(l)坚$(), $(l)魄$(), $(l)墨$()."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Stage Exit",
+      "text": "Stone can branch to Copper, but Copper is an endpoint. To continue the main path, fill Stone momentum, win $(l)劫$(), and upgrade to Iron.$(br2)Choose Copper only when you want an early side-grade instead of progression."
+    }
+  ]
+}

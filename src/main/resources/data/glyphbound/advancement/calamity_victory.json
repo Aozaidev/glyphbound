@@ -1,0 +1,22 @@
+{
+  "parent": "glyphbound:first_calamity",
+  "criteria": {
+    "done": {
+      "trigger": "minecraft:impossible"
+    }
+  },
+  "display": {
+    "description": "赢得一次墨斗场。",
+    "frame": "task",
+    "icon": {
+      "count": 1,
+      "id": "glyphbound:ink_core"
+    },
+    "title": "墨斗胜者"
+  },
+  "requirements": [
+    [
+      "done"
+    ]
+  ]
+}

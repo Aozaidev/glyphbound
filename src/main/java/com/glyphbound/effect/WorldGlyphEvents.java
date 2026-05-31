@@ -8,6 +8,7 @@ import com.aozainkmc.api.event.InkMarkBeforeAttachEvent;
 import com.aozainkmc.api.event.InkMarkAttachedEvent;
 import com.glyphbound.Glyphbound;
 import com.glyphbound.core.GlyphAttributes;
+import com.glyphbound.core.GlyphboundAdvancements;
 import com.glyphbound.core.GlyphboundItems;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -61,6 +62,7 @@ public final class WorldGlyphEvents {
     private static final String INK_FIELD_WORD = "墨";
     private static final String MOUNTAIN_WORD = "山";
     private static final String RIFT_WORD = "裂";
+    private static final String BOUNDARY_WORD = "界";
     private static final ResourceLocation INK_MAX_HEALTH = id("ink_field_max_health");
     private static final ResourceLocation INK_ATTACK_DAMAGE = id("ink_field_attack_damage");
     private static final ResourceLocation INK_MOVEMENT_SPEED = id("ink_field_movement_speed");
@@ -116,6 +118,13 @@ public final class WorldGlyphEvents {
         }
         if (RIFT_WORD.equals(mark.word())) {
             castRift(mark);
+            return;
+        }
+        if (BOUNDARY_WORD.equals(mark.word())) {
+            ServerPlayer player = findPlayerForWorldGlyph(mark);
+            if (player != null) {
+                player.displayClientMessage(Component.literal("界: 此界未稳"), true);
+            }
         }
     }
 
@@ -172,6 +181,9 @@ public final class WorldGlyphEvents {
         ItemStack core = new ItemStack(GlyphboundItems.INK_CORE.get());
         ItemEntity drop = new ItemEntity(level, event.getEntity().getX(), event.getEntity().getY() + 0.25D, event.getEntity().getZ(), core);
         event.getDrops().add(drop);
+        if (attacker instanceof ServerPlayer player) {
+            GlyphboundAdvancements.award(player, GlyphboundAdvancements.INK_CORE_DROP);
+        }
     }
 
     @SubscribeEvent
@@ -301,6 +313,7 @@ public final class WorldGlyphEvents {
         }
 
         inkFields.put(owner.getUUID(), new InkFieldState(owner.getUUID(), owner.level().dimension(), InkStaffMetadata.tier(mark)));
+        GlyphboundAdvancements.award(owner, GlyphboundAdvancements.INK_FIELD_ACTIVE);
         owner.displayClientMessage(Component.literal("墨: 墨染场展开，再写墨可收束"), true);
     }
 
@@ -345,6 +358,7 @@ public final class WorldGlyphEvents {
 
         if (applyTerrain(level, terrain)) {
             terrains.put(terrain.id, terrain);
+            GlyphboundAdvancements.award(owner, GlyphboundAdvancements.MOUNTAIN_WALL);
             owner.displayClientMessage(Component.literal("山: 石脊立起"), true);
             level.sendParticles(ParticleTypes.POOF, base.getX() + 0.5D, base.getY() + 1.0D, base.getZ() + 0.5D, 28, 2.8D, 0.9D, 2.8D, 0.03D);
         }
@@ -375,6 +389,7 @@ public final class WorldGlyphEvents {
         );
         terrain.riftSpec = spec;
         terrains.put(terrain.id, terrain);
+        GlyphboundAdvancements.award(owner, GlyphboundAdvancements.RIFT_TRAP);
         owner.displayClientMessage(Component.literal("裂: 地鸣将开"), true);
         level.sendParticles(ParticleTypes.SMOKE, surface.getX() + 0.5D, surface.getY() + 1.0D, surface.getZ() + 0.5D, 20, spec.radius(), 0.2D, spec.radius(), 0.02D);
     }
@@ -755,10 +770,8 @@ public final class WorldGlyphEvents {
         return switch (tier) {
             case WOOD -> new SpringSpec(5.0F, ticksSeconds(30));
             case STONE -> new SpringSpec(7.0F, ticksSeconds(25));
-            case COPPER -> new SpringSpec(8.0F, ticksSeconds(20));
-            case IRON -> new SpringSpec(10.0F, ticksSeconds(15));
-            case GOLD -> new SpringSpec(12.0F, ticksSeconds(5));
-            case DIAMOND -> new SpringSpec(14.0F, ticksSeconds(10));
+            case COPPER, IRON -> new SpringSpec(10.0F, ticksSeconds(15));
+            case GOLD, DIAMOND -> new SpringSpec(14.0F, ticksSeconds(10));
             case NETHERITE -> new SpringSpec(16.0F, ticksSeconds(5));
         };
     }
@@ -767,10 +780,8 @@ public final class WorldGlyphEvents {
         return switch (tier) {
             case WOOD -> new InkFieldSpec(8.0D, 2.0F, 1.00D, 0.50D, 0.20D, ticksSeconds(20), 18);
             case STONE -> new InkFieldSpec(10.0D, 2.2F, 0.85D, 0.42D, 0.18D, ticksSeconds(18), 18);
-            case COPPER -> new InkFieldSpec(12.0D, 2.4F, 0.70D, 0.35D, 0.15D, ticksSeconds(16), 20);
-            case IRON -> new InkFieldSpec(14.0D, 2.6F, 0.55D, 0.28D, 0.12D, ticksSeconds(14), 20);
-            case GOLD -> new InkFieldSpec(16.0D, 2.8F, 0.60D, 0.30D, 0.14D, ticksSeconds(12), 22);
-            case DIAMOND -> new InkFieldSpec(18.0D, 3.0F, 0.35D, 0.18D, 0.08D, ticksSeconds(10), 22);
+            case COPPER, IRON -> new InkFieldSpec(14.0D, 2.6F, 0.55D, 0.28D, 0.12D, ticksSeconds(14), 20);
+            case GOLD, DIAMOND -> new InkFieldSpec(18.0D, 3.0F, 0.35D, 0.18D, 0.08D, ticksSeconds(10), 22);
             case NETHERITE -> new InkFieldSpec(22.0D, 4.0F, 0.20D, 0.10D, 0.05D, ticksSeconds(8), 24);
         };
     }
@@ -779,10 +790,8 @@ public final class WorldGlyphEvents {
         return switch (tier) {
             case WOOD -> new MountainSpec(2, Blocks.STONE.defaultBlockState(), false, 0.0F, ticksSeconds(45));
             case STONE -> new MountainSpec(3, Blocks.COBBLESTONE.defaultBlockState(), false, 0.0F, ticksMinutes(1));
-            case COPPER -> new MountainSpec(3, Blocks.MOSSY_COBBLESTONE.defaultBlockState(), false, 0.0F, ticksSeconds(90));
-            case IRON -> new MountainSpec(4, Blocks.STONE_BRICKS.defaultBlockState(), false, 0.0F, ticksMinutes(2));
-            case GOLD -> new MountainSpec(4, Blocks.STONE_BRICKS.defaultBlockState(), true, 0.0F, ticksSeconds(90));
-            case DIAMOND -> new MountainSpec(5, Blocks.DEEPSLATE_BRICKS.defaultBlockState(), false, 1.0F, ticksMinutes(3));
+            case COPPER, IRON -> new MountainSpec(4, Blocks.STONE_BRICKS.defaultBlockState(), false, 0.0F, ticksMinutes(2));
+            case GOLD, DIAMOND -> new MountainSpec(5, Blocks.DEEPSLATE_BRICKS.defaultBlockState(), false, 1.0F, ticksMinutes(3));
             case NETHERITE -> new MountainSpec(5, Blocks.OBSIDIAN.defaultBlockState(), false, 1.5F, ticksMinutes(4));
         };
     }
@@ -791,10 +800,8 @@ public final class WorldGlyphEvents {
         return switch (tier) {
             case WOOD -> new RiftSpec(1, false, false, false, false, ticksSeconds(30));
             case STONE -> new RiftSpec(1, false, false, false, false, ticksSeconds(45));
-            case COPPER -> new RiftSpec(1, false, true, false, false, ticksMinutes(1));
-            case IRON -> new RiftSpec(1, false, true, true, false, ticksSeconds(90));
-            case GOLD -> new RiftSpec(2, true, true, true, false, ticksSeconds(75));
-            case DIAMOND -> new RiftSpec(2, false, true, true, false, ticksMinutes(2));
+            case COPPER, IRON -> new RiftSpec(1, false, true, true, false, ticksSeconds(90));
+            case GOLD, DIAMOND -> new RiftSpec(2, false, true, true, false, ticksMinutes(2));
             case NETHERITE -> new RiftSpec(2, false, true, true, true, ticksMinutes(3));
         };
     }
@@ -896,5 +903,18 @@ public final class WorldGlyphEvents {
             }
             return new AABB(minX, minY, minZ, maxX + 1.0D, maxY + 1.0D, maxZ + 1.0D);
         }
+    }
+
+    private static ServerPlayer findPlayerForWorldGlyph(InkMark mark) {
+        if (mark.owner() == null || mark.target().entityUuid() == null) {
+            return null;
+        }
+        for (ServerLevel level : net.neoforged.neoforge.server.ServerLifecycleHooks.getCurrentServer().getAllLevels()) {
+            Entity entity = level.getEntity(mark.target().entityUuid());
+            if (entity instanceof ServerPlayer player && player.getUUID().equals(mark.owner())) {
+                return player;
+            }
+        }
+        return null;
     }
 }

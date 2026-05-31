@@ -1,0 +1,18 @@
+{
+  "name": "Stage 1 Overview",
+  "icon": "aozainkmc:ink_brush",
+  "category": "glyphbound:stage1_wood",
+  "sortnum": 0,
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "title": "What To Do",
+      "text": "Goal: survive early fights, learn the writing flow, then build enough momentum for your first tribulation.$(br2)Core glyphs: $(l)心$() for temporary HP, $(l)命$() for fatal-hit protection, $(l)净$() to cleanse debuffs, $(l)忍$() to convert damage into ink wound.$(br2)$(l)明$() gives early hostile sensing."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Stage Exit",
+      "text": "Write $(l)入$() to enter Ink Arena and farm momentum. Once the wood stave reaches full momentum, write $(l)劫$(), win the tribulation, then upgrade to Stone.$(br2)$(l)入$(), $(l)劫$(), and $(l)出$() are available at every tier."
+    }
+  ]
+}

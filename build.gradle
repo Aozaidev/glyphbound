@@ -52,8 +52,8 @@ runs {
 
 dependencies {
     implementation "net.neoforged:neoforge:${project.neo_version}"
-    compileOnly files("../aozainkmc/build/libs/aozainkmc-0.1.0-all.jar")
-    runtimeOnly files("../aozainkmc/build/libs/aozainkmc-0.1.0-all.jar")
+    compileOnly files("../aozainkmc/build/libs/aozainkmc-${project.aozainkmc_version}.jar")
+    runtimeOnly files("../aozainkmc/build/libs/aozainkmc-${project.aozainkmc_version}.jar")
     compileOnly "vazkii.patchouli:Patchouli:1.21.1-93-NEOFORGE:api"
 }
 

@@ -1,6 +1,15 @@
 {
   "modmenu.nameTranslation.glyphbound": "墨蕴·万象",
   "item.glyphbound.ink_core": "墨核",
+  "block.glyphbound.ink_stone": "墨石",
+  "block.glyphbound.polished_ink_stone": "磨墨石",
+  "block.glyphbound.ink_brick": "墨砖",
+  "block.glyphbound.ink_dirt": "墨土",
+  "block.glyphbound.ink_sand": "湿墨淤",
+  "block.glyphbound.parchment_block": "宣纸块",
+  "block.glyphbound.parchment_lantern": "宣纸灯",
+  "block.glyphbound.boundary_stele": "界碑",
+  "block.glyphbound.ink_realm_portal": "墨界门",
   "book.glyphbound.guide.name": "执笔引",
-  "book.glyphbound.guide.landing_text": "一本教你写字的书。（并不完全。）$(br2)这里只记已经能用的东西：怎么做魔杖、14个身体字怎么用、怎么打墨斗场和渡劫、怎么用封印和墨染场。"
+  "book.glyphbound.guide.landing_text": "按阶段读，不用先背完整系统。$(br2)先看第0阶段做第一根魔杖，再按第1~5阶段推进：保命、探索、场控、高阶反打、墨界。$(br2)数值和全字说明放在最后速查。"
 }

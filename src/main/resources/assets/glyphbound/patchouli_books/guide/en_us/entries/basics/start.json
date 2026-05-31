@@ -1,38 +1,33 @@
 {
-  "name": "First Ten Minutes",
-  "icon": "aozainkmc:ink_brush",
+  "name": "Start Here",
+  "icon": "minecraft:ink_sac",
   "category": "glyphbound:basics",
   "sortnum": 0,
   "pages": [
     {
       "type": "patchouli:text",
-      "title": "Start with 心",
-      "text": "Craft a wooden stave. Hold it, press $(l)G$(), and write $(l)心$().$(br2)This first cast proves four things: the circle opens, your writing is recognized, the glyph is implemented, and the effect appears on your character."
+      "title": "What to Do First",
+      "text": "Stage 0 has three goals:$(br)1. Craft a wood stave.$(br)2. Press $(l)G$() to open the writing circle.$(br)3. Write $(l)心$() and confirm temporary HP works.$(br2)After that, move to Stage 1."
     },
     {
       "type": "patchouli:text",
-      "title": "Two circles",
-      "text": "$(l)G$() opens the body writing circle. Body glyphs mostly affect you.$(br2)$(l)V$() opens the inscription circle. 山, 裂, and 印 use it for world positions; 泉 can also use it to heal players near the target block."
+      "title": "Two Circles",
+      "text": "$(l)G$() body circle: glyphs affect you.$(br2)$(l)V$() inscription circle: glyphs land on world positions. 泉, 山, 裂, 印 use this."
     },
     {
       "type": "patchouli:text",
-      "title": "Close rules",
-      "text": "The circle closes when you finish writing, move too far away, change dimension, die, or log out.$(br2)If it remains open after movement, step away from the writing point; distance cleanup is there so the circle cannot keep eating left clicks."
+      "title": "How to Write",
+      "text": "Hold left click to draw, release to auto-recognize; or press $(l)Enter$() manually.$(br)$(l)R$() clears, $(l)X$() cancels. Moving 10 blocks away closes it.$(br2)Switching held items also closes the circle."
     },
     {
       "type": "patchouli:text",
-      "title": "Valid glyphs",
-      "text": "Only implemented glyphs cast. Unknown characters show a message and do not gain momentum or spend durability.$(br2)Current core set: 心 命 救 息 忍 净 坚 稳 隐 明 脉 力 怒 魄 入 出 劫 印 泉 山 裂 墨."
+      "title": "Valid Glyphs",
+      "text": "Only implemented glyphs work. Unknown characters show a message and cost nothing.$(br2)Glyphs unlock by stave tier. Writing a locked glyph shows a tier requirement message."
     },
     {
       "type": "patchouli:text",
-      "title": "State cleanup",
-      "text": "Glyphbound custom states clear on death, logout, world switch, or server stop. Temporary terrain and arenas also clean themselves.$(br2)Vanilla potion effects follow normal Minecraft rules."
-    },
-    {
-      "type": "patchouli:text",
-      "title": "First route",
-      "text": "Recommended order:$(br)1. Craft a wooden stave.$(br)2. Write $(l)心$().$(br)3. Before caving, write $(l)命$() or $(l)忍$().$(br)4. Under pressure, learn $(l)净$(), $(l)稳$(), and $(l)力$().$(br2)Do not memorize the whole book first. Learn how to survive."
+      "title": "Next Stages",
+      "text": "Advance by stage instead of memorizing the whole system at once:$(br)Stage 1 Wood: survival glyphs, 入, and 劫.$(br)Stage 2 Stone: exploration, recovery, stability.$(br)Stage 3 Iron/Copper: seals, walls, rifts.$(br)Stage 4 Diamond/Gold: high-tier counterplay.$(br)Stage 5 Netherite: Ink Realm.$(br2)Use the reference only when you need numbers."
     }
   ]
 }

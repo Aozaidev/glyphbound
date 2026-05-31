@@ -1,0 +1,73 @@
+{
+  "name": "合成、升级、修复",
+  "icon": "minecraft:anvil",
+  "category": "glyphbound:basics",
+  "sortnum": 1,
+  "pages": [
+    {
+      "type": "patchouli:crafting",
+      "recipe": "aozainkmc:ink_brush",
+      "title": "木杖",
+      "text": "先做第一根木杖：右上木板，左下木棍。$(br2)不是原版竖直长柄，摆反不出结果。"
+    },
+    {
+      "type": "patchouli:text",
+      "title": "升级怎么摆",
+      "text": "升级仍然在工作台完成：右上放进阶材料，左下放旧杖。$(br2)主线：木→石→铁→钻石→下界合金。$(br)分支：石→铜（终点）、铁→金（终点）。$(br2)后面几页按这个摆法展示。若没有结果，先确认当前杖已经渡劫成功，获得可升级标记。"
+    },
+    {
+      "type": "glyphbound:staff_upgrade_pair",
+      "heading": "主线升级 I",
+      "left_label": "木杖 → 石杖",
+      "left_material": "minecraft:cobblestone",
+      "left_staff": "aozainkmc:ink_brush",
+      "left_result": "aozainkmc:stone_ink_staff",
+      "right_label": "石杖 → 铁杖",
+      "right_material": "minecraft:iron_ingot",
+      "right_staff": "aozainkmc:stone_ink_staff",
+      "right_result": "aozainkmc:iron_ink_staff",
+      "note": "石杖材料可用原版石质工具材料；图中用圆石代表。"
+    },
+    {
+      "type": "glyphbound:staff_upgrade_pair",
+      "heading": "主线升级 II",
+      "left_label": "铁杖 → 钻石杖",
+      "left_material": "minecraft:diamond",
+      "left_staff": "aozainkmc:iron_ink_staff",
+      "left_result": "aozainkmc:diamond_ink_staff",
+      "right_label": "钻石杖 → 下界合金杖",
+      "right_material": "minecraft:netherite_ingot",
+      "right_staff": "aozainkmc:diamond_ink_staff",
+      "right_result": "aozainkmc:netherite_ink_staff",
+      "note": "每次升级前都要先让旧杖渡劫成功。"
+    },
+    {
+      "type": "glyphbound:staff_upgrade_pair",
+      "heading": "分支升级",
+      "left_label": "石杖 → 铜杖",
+      "left_material": "minecraft:copper_ingot",
+      "left_staff": "aozainkmc:stone_ink_staff",
+      "left_result": "aozainkmc:copper_ink_staff",
+      "right_label": "铁杖 → 金杖",
+      "right_material": "minecraft:gold_ingot",
+      "right_staff": "aozainkmc:iron_ink_staff",
+      "right_result": "aozainkmc:gold_ink_staff",
+      "note": "铜杖、金杖是终点分支，不能继续升主线。"
+    },
+    {
+      "type": "patchouli:text",
+      "title": "笔势与劫",
+      "text": "写有效字 +1 笔势。写 $(l)入$() 打赢墨斗场会额外加笔势：木+5 石+8 铜+10 铁/金+12 钻石/下界合金+15。$(br2)满势后写 $(l)劫$()，打赢渡劫场，当前魔杖获得“可升级”标记。"
+    },
+    {
+      "type": "patchouli:text",
+      "title": "各阶段目标",
+      "text": "木30 → 石45 → 铁70 → 钻石110 → 下界合金160。$(br2)铜55、金90 是分支杖目标。分支杖不能继续升级，适合提前体验高阶效果；想走主线就重新做一根主线杖。"
+    },
+    {
+      "type": "patchouli:text",
+      "title": "修复",
+      "text": "铁砧第一格放要保留的杖，第二格放同阶杖或 $(l)墨核$()。$(br)墨核每颗修 250 耐久，一次最多 4 颗。$(br)同阶杖修复保留第一格的所有数据。$(br2)高阶杖修复消耗更多经验和墨核。"
+    }
+  ]
+}

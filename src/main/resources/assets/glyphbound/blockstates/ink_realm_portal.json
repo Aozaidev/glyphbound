@@ -1,0 +1,6 @@
+{
+  "variants": {
+    "axis=x": { "model": "glyphbound:block/ink_realm_portal" },
+    "axis=z": { "model": "glyphbound:block/ink_realm_portal", "y": 90 }
+  }
+}

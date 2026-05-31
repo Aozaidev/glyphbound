@@ -61,6 +61,18 @@ NUL
 *.swp
 *~
 
+# Local generated texture drafts and source references
+/ChatGPT Image *.png
+/boundary_stele.png
+/c79798ae-bcd0-47d5-9218-dfb596825f96.png
+/ink_*.png
+/inkportal.png
+/inksky*.png
+/nether_portal.png
+/nether_portal.png.mcmeta
+/parchment_*.png
+/wet_ink_silt.png
+
 第二波
 第一波
 墨界

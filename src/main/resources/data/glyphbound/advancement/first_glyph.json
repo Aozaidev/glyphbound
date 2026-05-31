@@ -1,0 +1,22 @@
+{
+  "parent": "glyphbound:root",
+  "criteria": {
+    "done": {
+      "trigger": "minecraft:impossible"
+    }
+  },
+  "display": {
+    "description": "首次书写任意字。",
+    "frame": "task",
+    "icon": {
+      "count": 1,
+      "id": "minecraft:ink_sac"
+    },
+    "title": "初墨"
+  },
+  "requirements": [
+    [
+      "done"
+    ]
+  ]
+}

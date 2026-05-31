@@ -1,0 +1,23 @@
+{
+  "parent": "glyphbound:tribulation_victory",
+  "criteria": {
+    "done": {
+      "trigger": "minecraft:impossible"
+    }
+  },
+  "display": {
+    "announce_to_chat": true,
+    "description": "下界合金魔杖笔势满。",
+    "frame": "challenge",
+    "icon": {
+      "count": 1,
+      "id": "aozainkmc:netherite_ink_staff"
+    },
+    "title": "登峰造极"
+  },
+  "requirements": [
+    [
+      "done"
+    ]
+  ]
+}

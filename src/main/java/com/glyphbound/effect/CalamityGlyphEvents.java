@@ -6,9 +6,14 @@ import com.aozainkmc.api.InkStaffMetadata;
 import com.aozainkmc.api.InkStaffTier;
 import com.aozainkmc.api.InkTargetType;
 import com.aozainkmc.api.InkStaffs;
+import com.aozainkmc.api.event.InkMarkBeforeAttachEvent;
 import com.aozainkmc.api.event.InkMarkAttachedEvent;
 import com.glyphbound.Glyphbound;
+import com.glyphbound.core.GlyphboundAdvancements;
 import com.glyphbound.core.GlyphboundItems;
+import com.glyphbound.core.StaffTierUtils;
+import com.glyphbound.effect.InkRealmEvents;
+import com.glyphbound.world.InkRealmState;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -52,8 +57,12 @@ import net.minecraft.world.phys.AABB;
 import net.neoforged.bus.api.EventPriority;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
+import net.neoforged.neoforge.event.entity.EntityJoinLevelEvent;
+import net.neoforged.neoforge.event.entity.EntityMobGriefingEvent;
 import net.neoforged.neoforge.event.entity.living.LivingDamageEvent;
 import net.neoforged.neoforge.event.entity.player.PlayerEvent;
+import net.neoforged.neoforge.event.level.BlockEvent;
+import net.neoforged.neoforge.event.level.ExplosionEvent;
 import net.neoforged.neoforge.event.server.ServerStoppedEvent;
 import net.neoforged.neoforge.event.tick.ServerTickEvent;
 
@@ -67,11 +76,42 @@ public final class CalamityGlyphEvents {
     private static final int BUILD_INTERVAL_TICKS = 5;
     private static final int EXIT_DELAY_TICKS = 60;
     private static final long COOLDOWN_TICKS = 20L * 60L * 2L;
+    private static final int MIN_ARENA_CLEARANCE = 20;
+    private static final int ARENA_SEARCH_STEP = 4;
+    private static final double ELITE_SCALE_MULTIPLIER = 1.25D;
+    private static final double BOSS_SCALE_MULTIPLIER = 1.50D;
+    private static final String ARENA_MOB_TAG = "glyphbound_calamity_mob";
 
     private static final Map<UUID, CalamityArena> arenas = new HashMap<>();
     private static final Map<UUID, Long> cooldowns = new HashMap<>();
 
     private CalamityGlyphEvents() {
+    }
+
+    @SubscribeEvent
+    public static void onInkMarkBeforeAttach(InkMarkBeforeAttachEvent event) {
+        InkMark mark = event.mark();
+        if (mark.target().type() != InkTargetType.PLAYER) {
+            return;
+        }
+
+        ServerPlayer player = event.player();
+        String word = mark.word();
+        if (ENTRY_WORD.equals(word)) {
+            String failure = precheckEntryFailure(player, event.staffTier());
+            if (failure != null) {
+                event.setCanceled(true);
+                event.requestCloseInput(failure);
+            }
+            return;
+        }
+        if (TRIBULATION_WORD.equals(word)) {
+            String failure = precheckTribulationFailure(player);
+            if (failure != null) {
+                event.setCanceled(true);
+                event.requestCloseInput(failure);
+            }
+        }
     }
 
     @SubscribeEvent
@@ -86,6 +126,10 @@ public final class CalamityGlyphEvents {
             return;
         }
         if (EXIT_WORD.equals(mark.word())) {
+            if (InkRealmEvents.isInkRealm(player.level())) {
+                InkRealmEvents.exitInkRealm(player);
+                return;
+            }
             CalamityArena arena = arenas.get(player.getUUID());
             if (arena != null && arena.awaitingExit()) {
                 arena.startExit(player);
@@ -93,6 +137,10 @@ public final class CalamityGlyphEvents {
             return;
         }
         if (ENTRY_WORD.equals(mark.word())) {
+            if (InkRealmEvents.isInkRealm(player.level())) {
+                player.displayClientMessage(Component.literal("入: 已在墨界"), true);
+                return;
+            }
             startEntry(player, InkStaffMetadata.tier(mark));
             return;
         }
@@ -138,6 +186,51 @@ public final class CalamityGlyphEvents {
     }
 
     @SubscribeEvent
+    public static void onBlockBreak(BlockEvent.BreakEvent event) {
+        if (activeArenaAt(event.getLevel(), event.getPos()) != null) {
+            event.setCanceled(true);
+            if (event.getPlayer() instanceof ServerPlayer player) {
+                player.displayClientMessage(Component.literal("墨斗场内不可破坏方块"), true);
+            }
+        }
+    }
+
+    @SubscribeEvent
+    public static void onBlockPlace(BlockEvent.EntityPlaceEvent event) {
+        if (activeArenaAt(event.getLevel(), event.getPos()) != null) {
+            event.setCanceled(true);
+            if (event.getEntity() instanceof ServerPlayer player) {
+                player.displayClientMessage(Component.literal("墨斗场内不可放置方块"), true);
+            }
+        }
+    }
+
+    @SubscribeEvent
+    public static void onEntityJoinLevel(EntityJoinLevelEvent event) {
+        if (event.getLevel().isClientSide() || event.loadedFromDisk() || !(event.getEntity() instanceof Monster monster)) {
+            return;
+        }
+        if (monster.getTags().contains(ARENA_MOB_TAG)) {
+            return;
+        }
+        if (activeArenaAt(event.getLevel(), monster.blockPosition()) != null) {
+            event.setCanceled(true);
+        }
+    }
+
+    @SubscribeEvent
+    public static void onEntityMobGriefing(EntityMobGriefingEvent event) {
+        if (activeArenaAt(event.getEntity().level(), event.getEntity().blockPosition()) != null) {
+            event.setCanGrief(false);
+        }
+    }
+
+    @SubscribeEvent
+    public static void onExplosionDetonate(ExplosionEvent.Detonate event) {
+        event.getAffectedBlocks().removeIf(pos -> activeArenaAt(event.getLevel(), pos) != null);
+    }
+
+    @SubscribeEvent
     public static void onServerStopped(ServerStoppedEvent event) {
         for (CalamityArena arena : List.copyOf(arenas.values())) {
             arena.cleanup(event.getServer().getLevel(arena.arenaDimension));
@@ -146,66 +239,65 @@ public final class CalamityGlyphEvents {
         cooldowns.clear();
     }
 
-    private static void startEntry(ServerPlayer player, InkStaffTier tier) {
-        long gameTime = player.serverLevel().getGameTime();
-        if (player.level().getDifficulty() == Difficulty.PEACEFUL) {
-            player.displayClientMessage(Component.literal("入: 和平难度无法触发"), true);
-            return;
+    private static CalamityArena activeArenaAt(net.minecraft.world.level.LevelAccessor level, BlockPos pos) {
+        if (!(level instanceof Level actualLevel)) {
+            return null;
         }
-        if (arenas.containsKey(player.getUUID()) || cooldowns.getOrDefault(player.getUUID(), 0L) > gameTime) {
-            player.displayClientMessage(Component.literal("入: 墨斗尚未平息"), true);
+        for (CalamityArena arena : arenas.values()) {
+            if (arena.contains(actualLevel, pos)) {
+                return arena;
+            }
+        }
+        return null;
+    }
+
+    private static void startEntry(ServerPlayer player, InkStaffTier tier) {
+        String failure = precheckEntryFailure(player, tier);
+        if (failure != null) {
+            player.displayClientMessage(Component.literal(failure), true);
             return;
         }
 
+        if (tier == InkStaffTier.NETHERITE) {
+            ItemStack staff = heldStaff(player);
+            if (InkStaffProgress.isFull(staff, tier)) {
+                GlyphboundAdvancements.award(player, GlyphboundAdvancements.NETHERITE_FULL);
+                InkRealmEvents.enterInkRealm(player);
+                return;
+            }
+        }
         ServerLevel level = player.serverLevel();
         CalamitySpec spec = entrySpec(tier);
-        BlockPos arenaCenter = arenaCenterFor(level, player.blockPosition(), spec.wallHeight());
-        if (arenaCenter == null || !hasBuildSpace(level, arenaCenter, spec)) {
+        BlockPos arenaCenter = findArenaCenter(level, player.blockPosition(), spec);
+        if (arenaCenter == null) {
             player.displayClientMessage(Component.literal("入: 上方空间拥挤"), true);
             return;
         }
 
         UUID staffId = matchingHeldStaffId(player, tier);
+        long gameTime = player.serverLevel().getGameTime();
         CalamityArena arena = new CalamityArena(player, level, arenaCenter, spec, staffId, gameTime);
         arenas.put(player.getUUID(), arena);
         cooldowns.put(player.getUUID(), gameTime + COOLDOWN_TICKS);
         arena.begin(player);
+        GlyphboundAdvancements.award(player, GlyphboundAdvancements.FIRST_CALAMITY);
     }
 
     private static void startTribulation(ServerPlayer player) {
-        if (player.level().getDifficulty() == Difficulty.PEACEFUL) {
-            player.displayClientMessage(Component.literal("劫: 和平难度无法触发"), true);
-            return;
-        }
-        if (arenas.containsKey(player.getUUID())) {
-            player.displayClientMessage(Component.literal("劫: 当前已有挑战"), true);
+        String failure = precheckTribulationFailure(player);
+        if (failure != null) {
+            player.displayClientMessage(Component.literal(failure), true);
             return;
         }
 
         ItemStack staff = heldStaff(player);
         InkStaffTier tier = InkStaffs.tier(staff).orElse(null);
-        if (tier == null) {
-            player.displayClientMessage(Component.literal("劫: 需要手持魔杖"), true);
-            return;
-        }
-        if (tier.next().isEmpty()) {
-            player.displayClientMessage(Component.literal("劫: 此杖已至极境"), true);
-            return;
-        }
-        if (!InkStaffProgress.isFull(staff, tier)) {
-            player.displayClientMessage(Component.literal("劫: 魔杖境界未满"), true);
-            return;
-        }
-        if (InkStaffProgress.isBreakthroughReady(staff)) {
-            player.displayClientMessage(Component.literal("劫: 此杖已渡劫，可升级"), true);
-            return;
-        }
         UUID staffId = InkStaffProgress.ensureInstanceId(staff);
 
         ServerLevel level = player.serverLevel();
         CalamitySpec spec = tribulationSpec(tier);
-        BlockPos arenaCenter = arenaCenterFor(level, player.blockPosition(), spec.wallHeight());
-        if (arenaCenter == null || !hasBuildSpace(level, arenaCenter, spec)) {
+        BlockPos arenaCenter = findArenaCenter(level, player.blockPosition(), spec);
+        if (arenaCenter == null) {
             player.displayClientMessage(Component.literal("劫: 上方空间拥挤"), true);
             return;
         }
@@ -213,6 +305,7 @@ public final class CalamityGlyphEvents {
         CalamityArena arena = new CalamityArena(player, level, arenaCenter, spec, staffId, level.getGameTime());
         arenas.put(player.getUUID(), arena);
         arena.begin(player);
+        GlyphboundAdvancements.award(player, GlyphboundAdvancements.FIRST_TRIBULATION);
     }
 
     private static ItemStack heldStaff(ServerPlayer player) {
@@ -254,16 +347,76 @@ public final class CalamityGlyphEvents {
         return null;
     }
 
-    private static BlockPos arenaCenterFor(ServerLevel level, BlockPos source, int wallHeight) {
+    private static String precheckEntryFailure(ServerPlayer player, InkStaffTier tier) {
+        long gameTime = player.serverLevel().getGameTime();
+        if (player.level().getDifficulty() == Difficulty.PEACEFUL) {
+            return "入: 和平难度无法触发";
+        }
+        if (tier == InkStaffTier.NETHERITE) {
+            ItemStack staff = heldStaff(player);
+            if (InkStaffProgress.isFull(staff, tier)) {
+                return null;
+            }
+        }
+        if (arenas.containsKey(player.getUUID()) || cooldowns.getOrDefault(player.getUUID(), 0L) > gameTime) {
+            return "入: 墨斗尚未平息";
+        }
+        ServerLevel level = player.serverLevel();
+        CalamitySpec spec = entrySpec(tier);
+        BlockPos arenaCenter = findArenaCenter(level, player.blockPosition(), spec);
+        if (arenaCenter == null) {
+            return "入: 上方空间拥挤";
+        }
+        return null;
+    }
+
+    private static String precheckTribulationFailure(ServerPlayer player) {
+        if (player.level().getDifficulty() == Difficulty.PEACEFUL) {
+            return "劫: 和平难度无法触发";
+        }
+        if (arenas.containsKey(player.getUUID())) {
+            return "劫: 当前已有挑战";
+        }
+        ItemStack staff = heldStaff(player);
+        InkStaffTier tier = InkStaffs.tier(staff).orElse(null);
+        if (tier == null) {
+            return "劫: 需要手持魔杖";
+        }
+        if (!tier.canUpgrade()) {
+            return "劫: 此杖已至极境";
+        }
+        if (!InkStaffProgress.isFull(staff, tier)) {
+            return "劫: 魔杖境界未满";
+        }
+        if (InkStaffProgress.isBreakthroughReady(staff)) {
+            return "劫: 此杖已渡劫，可升级";
+        }
+        ServerLevel level = player.serverLevel();
+        CalamitySpec spec = tribulationSpec(tier);
+        BlockPos arenaCenter = findArenaCenter(level, player.blockPosition(), spec);
+        if (arenaCenter == null) {
+            return "劫: 上方空间拥挤";
+        }
+        return null;
+    }
+
+    private static BlockPos findArenaCenter(ServerLevel level, BlockPos source, CalamitySpec spec) {
         int surfaceY = level.getHeightmapPos(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, source).getY();
-        int y = surfaceY + 20;
-        if (y + wallHeight + 3 >= level.getMaxBuildHeight()) {
-            y = level.getMaxBuildHeight() - wallHeight - 4;
+        int minY = Math.max(surfaceY + MIN_ARENA_CLEARANCE, level.getMinBuildHeight() + 5);
+        int maxY = level.getMaxBuildHeight() - spec.wallHeight() - 4;
+        for (int y = minY; y <= maxY; y += ARENA_SEARCH_STEP) {
+            BlockPos center = new BlockPos(source.getX(), y, source.getZ());
+            if (hasBuildSpace(level, center, spec)) {
+                return center;
+            }
         }
-        if (y <= level.getMinBuildHeight() + 4) {
-            return null;
+        for (int y = Math.max(minY, maxY - ARENA_SEARCH_STEP + 1); y <= maxY; y++) {
+            BlockPos center = new BlockPos(source.getX(), y, source.getZ());
+            if (hasBuildSpace(level, center, spec)) {
+                return center;
+            }
         }
-        return new BlockPos(source.getX(), y, source.getZ());
+        return null;
     }
 
     private static boolean hasBuildSpace(ServerLevel level, BlockPos center, CalamitySpec spec) {
@@ -289,30 +442,19 @@ public final class CalamityGlyphEvents {
             case WOOD -> new CalamitySpec(tier, 2, List.of(
                 new WaveSpec(3, 0, false),
                 new WaveSpec(4, 0, false)
-            ), 1.5D, 1.20D, 1.10D, 0.0D, 0.0D, ChallengeKind.ENTRY, 24, 12, "入", "墨斗", 5);
+            ), 1.0D, 1.0D, 1.0D, 0.0D, 0.0D, ChallengeKind.ENTRY, 24, 12, "入", "墨斗", 5);
             case STONE -> new CalamitySpec(tier, 3, List.of(
                 new WaveSpec(3, 0, false),
                 new WaveSpec(4, 0, false),
                 new WaveSpec(5, 0, false)
-            ), 1.6D, 1.22D, 1.10D, 2.0D, 1.30D, ChallengeKind.ENTRY, 24, 12, "入", "墨斗", 8);
-            case COPPER -> new CalamitySpec(tier, 3, List.of(
-                new WaveSpec(4, 0, false),
-                new WaveSpec(5, 1, false),
-                new WaveSpec(5, 1, false)
-            ), 1.65D, 1.25D, 1.10D, 2.0D, 1.35D, ChallengeKind.ENTRY, 24, 12, "入", "墨斗", 10);
-            case IRON -> new CalamitySpec(tier, 4, List.of(
+            ), 1.25D, 1.08D, 1.04D, 1.6D, 1.18D, ChallengeKind.ENTRY, 24, 12, "入", "墨斗", 8);
+            case COPPER, IRON -> new CalamitySpec(tier, 4, List.of(
                 new WaveSpec(4, 0, false),
                 new WaveSpec(5, 0, false),
                 new WaveSpec(3, 2, false),
                 new WaveSpec(5, 1, false)
-            ), 1.75D, 1.28D, 1.12D, 2.15D, 1.38D, ChallengeKind.ENTRY, 24, 12, "入", "墨斗", 12);
-            case GOLD -> new CalamitySpec(tier, 4, List.of(
-                new WaveSpec(5, 0, false),
-                new WaveSpec(5, 1, false),
-                new WaveSpec(4, 2, false),
-                new WaveSpec(6, 1, false)
-            ), 1.85D, 1.32D, 1.14D, 2.25D, 1.42D, ChallengeKind.ENTRY, 24, 12, "入", "墨斗", 12);
-            case DIAMOND -> new CalamitySpec(tier, 6, List.of(
+            ), 1.5D, 1.18D, 1.08D, 1.95D, 1.30D, ChallengeKind.ENTRY, 24, 12, "入", "墨斗", 12);
+            case GOLD, DIAMOND -> new CalamitySpec(tier, 6, List.of(
                 new WaveSpec(5, 0, false),
                 new WaveSpec(6, 0, false),
                 new WaveSpec(4, 2, false),
@@ -334,7 +476,7 @@ public final class CalamityGlyphEvents {
     private static CalamitySpec tribulationSpec(InkStaffTier tier) {
         CalamitySpec base = entrySpec(tier);
         List<WaveSpec> waves = new ArrayList<>(base.waves());
-        waves.add(new WaveSpec(2 + tier.ordinal(), Math.max(1, tier.ordinal() / 2 + 1), true));
+        waves.add(new WaveSpec(2 + StaffTierUtils.tierRank(tier), Math.max(1, StaffTierUtils.tierRank(tier) / 2 + 1), true));
         return new CalamitySpec(
             tier,
             waves.size(),
@@ -588,6 +730,7 @@ public final class CalamityGlyphEvents {
                 mob.setCustomName(Component.literal(spec.eventName() + "爪牙"));
                 mob.setCustomNameVisible(true);
             }
+            mob.addTag(ARENA_MOB_TAG);
             applyMobStats(mob, elite, boss);
             level.addFreshEntity(mob);
             waveMobs.add(mob.getUUID());
@@ -616,15 +759,20 @@ public final class CalamityGlyphEvents {
             double attackMultiplier = elite ? spec.eliteAttackMultiplier() : spec.normalAttackMultiplier();
             double speedMultiplier = spec.normalSpeedMultiplier();
             if (boss) {
-                healthMultiplier = spec.kind() == ChallengeKind.TRIBULATION ? 4.8D : 4.0D;
-                attackMultiplier = spec.kind() == ChallengeKind.TRIBULATION ? 1.9D : 1.6D;
-                speedMultiplier = 1.15D;
+                healthMultiplier = bossHealthMultiplier(spec);
+                attackMultiplier = bossAttackMultiplier(spec);
+                speedMultiplier = Math.max(spec.normalSpeedMultiplier(), 1.05D);
             }
 
             multiplyAttribute(mob, Attributes.MAX_HEALTH, healthMultiplier);
             mob.setHealth(mob.getMaxHealth());
             multiplyAttribute(mob, Attributes.ATTACK_DAMAGE, attackMultiplier);
             multiplyAttribute(mob, Attributes.MOVEMENT_SPEED, speedMultiplier);
+            if (boss) {
+                multiplyAttribute(mob, Attributes.SCALE, BOSS_SCALE_MULTIPLIER);
+            } else if (elite) {
+                multiplyAttribute(mob, Attributes.SCALE, ELITE_SCALE_MULTIPLIER);
+            }
             if (mob instanceof Zombie zombie && boss) {
                 zombie.setBaby(false);
             }
@@ -649,6 +797,20 @@ public final class CalamityGlyphEvents {
             if (instance != null) {
                 instance.setBaseValue(instance.getBaseValue() * multiplier);
             }
+        }
+
+        private double bossHealthMultiplier(CalamitySpec spec) {
+            double[] entry = {0.0D, 0.0D, 0.0D, 3.2D, 4.0D};
+            double[] tribulation = {2.0D, 2.6D, 3.2D, 4.0D, 4.8D};
+            double[] values = spec.kind() == ChallengeKind.TRIBULATION ? tribulation : entry;
+            return values[Math.min(values.length - 1, StaffTierUtils.tierRank(spec.tier()))];
+        }
+
+        private double bossAttackMultiplier(CalamitySpec spec) {
+            double[] entry = {0.0D, 0.0D, 0.0D, 1.45D, 1.6D};
+            double[] tribulation = {1.2D, 1.35D, 1.5D, 1.7D, 1.9D};
+            double[] values = spec.kind() == ChallengeKind.TRIBULATION ? tribulation : entry;
+            return values[Math.min(values.length - 1, StaffTierUtils.tierRank(spec.tier()))];
         }
 
         private BlockPos spawnPos(int index) {
@@ -711,6 +873,7 @@ public final class CalamityGlyphEvents {
             player.teleportTo(level, originX, originY, originZ, originYRot, originXRot);
             restorePlayer(player, false);
             if (spec.kind() == ChallengeKind.TRIBULATION) {
+                GlyphboundAdvancements.award(player, GlyphboundAdvancements.TRIBULATION_VICTORY);
                 ItemStack staff = findStaffById(player, staffId);
                 if (!staff.isEmpty() && InkStaffs.tier(staff).orElse(null) == spec.tier()) {
                     InkStaffProgress.halveProgressRoundUp(staff);
@@ -747,13 +910,19 @@ public final class CalamityGlyphEvents {
                 return;
             }
 
+            GlyphboundAdvancements.award(player, GlyphboundAdvancements.CALAMITY_VICTORY);
             giveRewards(player);
             ItemStack staff = findStaffById(player, staffId);
             if (!staff.isEmpty()
                 && InkStaffs.tier(staff).orElse(null) == spec.tier()) {
                 boolean filled = InkStaffProgress.addProgress(staff, spec.tier(), spec.entryProgressReward());
                 if (filled) {
-                    player.displayClientMessage(Component.literal("入: 笔势 +" + spec.entryProgressReward() + "，境界已满，可写「劫」"), true);
+                    if (spec.tier() == InkStaffTier.NETHERITE) {
+                        GlyphboundAdvancements.award(player, GlyphboundAdvancements.NETHERITE_FULL);
+                        player.displayClientMessage(Component.literal("入: 笔势 +" + spec.entryProgressReward() + "，笔势已满，可写「入」前往墨界"), true);
+                    } else {
+                        player.displayClientMessage(Component.literal("入: 笔势 +" + spec.entryProgressReward() + "，境界已满，可写「劫」"), true);
+                    }
                 } else {
                     player.displayClientMessage(Component.literal("入: 笔势 +" + spec.entryProgressReward()), true);
                 }
@@ -762,24 +931,61 @@ public final class CalamityGlyphEvents {
 
         private void giveRewards(ServerPlayer player) {
             List<ItemStack> rewards = new ArrayList<>();
-            rewards.add(new ItemStack(Items.IRON_INGOT, 4 + spec.tier().ordinal() * 2));
-            rewards.add(new ItemStack(Items.COAL, 12 + spec.tier().ordinal() * 4));
-            rewards.add(new ItemStack(Items.BREAD, 4 + spec.tier().ordinal()));
-            if (spec.tier().ordinal() >= InkStaffTier.COPPER.ordinal()) {
-                rewards.add(new ItemStack(Items.GOLD_INGOT, 3 + spec.tier().ordinal()));
-            }
-            if (spec.tier().ordinal() >= InkStaffTier.IRON.ordinal()) {
-                rewards.add(new ItemStack(Items.DIAMOND, 1 + spec.tier().ordinal() / 3));
-            }
-            if (spec.tier().ordinal() >= InkStaffTier.DIAMOND.ordinal()) {
-                rewards.add(new ItemStack(Items.GOLDEN_APPLE, 1));
-                rewards.add(new ItemStack(Items.LAPIS_LAZULI, 16));
-            }
-            if (spec.tier() == InkStaffTier.NETHERITE) {
-                rewards.add(new ItemStack(Items.NETHERITE_SCRAP, 1));
+            net.minecraft.util.RandomSource random = player.getRandom();
+            switch (spec.tier()) {
+                case WOOD -> {
+                    rewards.add(new ItemStack(Items.IRON_INGOT, randomBetween(random, 1, 2)));
+                    rewards.add(new ItemStack(Items.COAL, randomBetween(random, 6, 10)));
+                    rewards.add(new ItemStack(Items.BREAD, 2));
+                }
+                case STONE -> {
+                    rewards.add(new ItemStack(Items.IRON_INGOT, randomBetween(random, 3, 4)));
+                    rewards.add(new ItemStack(Items.COAL, randomBetween(random, 8, 12)));
+                    rewards.add(new ItemStack(Items.BREAD, randomBetween(random, 2, 3)));
+                }
+                case COPPER, IRON -> {
+                    rewards.add(new ItemStack(Items.IRON_INGOT, randomBetween(random, 5, 6)));
+                    rewards.add(new ItemStack(Items.COAL, randomBetween(random, 10, 14)));
+                    rewards.add(new ItemStack(Items.BREAD, 3));
+                    if (random.nextFloat() < 0.60F) {
+                        rewards.add(new ItemStack(Items.GOLD_INGOT, 1));
+                    }
+                    if (random.nextFloat() < 0.25F) {
+                        rewards.add(new ItemStack(Items.DIAMOND, 1));
+                    }
+                }
+                case GOLD, DIAMOND -> {
+                    rewards.add(new ItemStack(Items.IRON_INGOT, randomBetween(random, 7, 8)));
+                    rewards.add(new ItemStack(Items.COAL, randomBetween(random, 12, 16)));
+                    rewards.add(new ItemStack(Items.BREAD, randomBetween(random, 3, 4)));
+                    rewards.add(new ItemStack(Items.GOLD_INGOT, randomBetween(random, 1, 2)));
+                    if (random.nextFloat() < 0.75F) {
+                        rewards.add(new ItemStack(Items.DIAMOND, randomBetween(random, 1, 2)));
+                    }
+                    if (random.nextFloat() < 0.35F) {
+                        rewards.add(new ItemStack(Items.GOLDEN_APPLE, 1));
+                    }
+                    rewards.add(new ItemStack(Items.LAPIS_LAZULI, 16));
+                    if (spec.tier() == InkStaffTier.GOLD && random.nextFloat() < 0.03F) {
+                        rewards.add(new ItemStack(Items.NETHERITE_SCRAP, 1));
+                    }
+                }
+                case NETHERITE -> {
+                    rewards.add(new ItemStack(Items.IRON_INGOT, randomBetween(random, 9, 10)));
+                    rewards.add(new ItemStack(Items.COAL, randomBetween(random, 14, 18)));
+                    rewards.add(new ItemStack(Items.BREAD, randomBetween(random, 4, 5)));
+                    rewards.add(new ItemStack(Items.GOLD_INGOT, randomBetween(random, 2, 3)));
+                    rewards.add(new ItemStack(Items.DIAMOND, randomBetween(random, 2, 3)));
+                    if (random.nextFloat() < 0.50F) {
+                        rewards.add(new ItemStack(Items.GOLDEN_APPLE, 1));
+                    }
+                    rewards.add(new ItemStack(Items.LAPIS_LAZULI, 24));
+                    rewards.add(new ItemStack(Items.NETHERITE_SCRAP, 1));
+                }
             }
             if (spec.kind() == ChallengeKind.ENTRY) {
                 rewards.add(new ItemStack(GlyphboundItems.INK_CORE.get(), inkCoreReward(player)));
+                GlyphboundAdvancements.award(player, GlyphboundAdvancements.INK_CORE_DROP);
             }
             for (ItemStack stack : rewards) {
                 if (!player.getInventory().add(stack)) {
@@ -789,8 +995,15 @@ public final class CalamityGlyphEvents {
         }
 
         private int inkCoreReward(ServerPlayer player) {
-            int min = spec.tier().ordinal();
+            int min = StaffTierUtils.tierRank(spec.tier());
             return min + player.getRandom().nextInt(2);
+        }
+
+        private static int randomBetween(net.minecraft.util.RandomSource random, int min, int max) {
+            if (max <= min) {
+                return min;
+            }
+            return min + random.nextInt(max - min + 1);
         }
 
         private void cleanup(ServerLevel level) {
@@ -852,6 +1065,10 @@ public final class CalamityGlyphEvents {
                 center.getY() + spec.wallHeight() + 3,
                 center.getZ() + spec.arenaRadius() + 1
             );
+        }
+
+        private boolean contains(Level level, BlockPos pos) {
+            return level.dimension() == arenaDimension && arenaBox().contains(pos.getX() + 0.5D, pos.getY() + 0.5D, pos.getZ() + 0.5D);
         }
 
         private void buildInitialPlatform(ServerLevel level) {

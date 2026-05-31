@@ -1,0 +1,22 @@
+{
+  "parent": "glyphbound:root",
+  "criteria": {
+    "done": {
+      "trigger": "minecraft:impossible"
+    }
+  },
+  "display": {
+    "description": "首次进入墨斗场。",
+    "frame": "task",
+    "icon": {
+      "count": 1,
+      "id": "minecraft:obsidian"
+    },
+    "title": "入局"
+  },
+  "requirements": [
+    [
+      "done"
+    ]
+  ]
+}

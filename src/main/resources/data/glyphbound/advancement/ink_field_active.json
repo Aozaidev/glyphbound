@@ -1,0 +1,22 @@
+{
+  "parent": "glyphbound:first_glyph",
+  "criteria": {
+    "done": {
+      "trigger": "minecraft:impossible"
+    }
+  },
+  "display": {
+    "description": "首次展开墨染场。",
+    "frame": "task",
+    "icon": {
+      "count": 1,
+      "id": "minecraft:black_dye"
+    },
+    "title": "墨染其身"
+  },
+  "requirements": [
+    [
+      "done"
+    ]
+  ]
+}

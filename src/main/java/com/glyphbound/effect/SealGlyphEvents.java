@@ -8,7 +8,9 @@ import com.aozainkmc.api.InkTarget;
 import com.aozainkmc.api.InkTargetType;
 import com.aozainkmc.api.event.InkMarkBeforeAttachEvent;
 import com.glyphbound.Glyphbound;
+import com.glyphbound.core.GlyphboundAdvancements;
 import com.glyphbound.core.GlyphAttributes;
+import com.glyphbound.core.StaffTierUtils;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -148,6 +150,7 @@ public final class SealGlyphEvents {
 
     private static void startSeal(InkMarkBeforeAttachEvent event) {
         ServerPlayer player = event.player();
+        GlyphboundAdvancements.awardGlyphWritten(player, event.mark().word());
         long gameTime = player.serverLevel().getGameTime();
         BlockPos pos = resolveSealAnchor(player.serverLevel(), BlockPos.of(event.mark().target().packedBlockPos()));
         pendingSeals.put(player.getUUID(), new PendingSeal(pos, event.staffTier(), player.level().dimension(), gameTime));
@@ -175,6 +178,7 @@ public final class SealGlyphEvents {
         }
 
         String word = event.mark().word();
+        GlyphboundAdvancements.awardGlyphWritten(player, word);
         if (SEALABLE_WORDS.contains(word) && sealSpecAvailable(word, seal.staffTier())) {
             createActiveSeal(player, seal, word);
             event.requestCloseInput(word + "印已成");
@@ -198,6 +202,7 @@ public final class SealGlyphEvents {
         ActiveSeal seal = new ActiveSeal(player.getUUID(), word, pending.selectedBlock(), pending.staffTier(), pending.dimension(), gameTime);
         activeSeals.put(seal.id, seal);
         enforceSealLimit(player, seal.dimension);
+        GlyphboundAdvancements.award(player, GlyphboundAdvancements.FIRST_SEAL);
     }
 
     private static void enforceSealLimit(ServerPlayer owner, ResourceKey<Level> dimension) {
@@ -671,10 +676,8 @@ public final class SealGlyphEvents {
         return switch (tier) {
             case WOOD -> 5;
             case STONE -> 7;
-            case COPPER -> 9;
-            case IRON -> 12;
-            case GOLD -> 14;
-            case DIAMOND -> 18;
+            case COPPER, IRON -> 12;
+            case GOLD, DIAMOND -> 18;
             case NETHERITE -> 24;
         };
     }
@@ -686,10 +689,8 @@ public final class SealGlyphEvents {
         int seconds = switch (tier) {
             case WOOD -> 180;
             case STONE -> 240;
-            case COPPER -> 324;
-            case IRON -> 540;
-            case GOLD -> 270;
-            case DIAMOND, NETHERITE -> 720;
+            case COPPER, IRON -> 540;
+            case GOLD, DIAMOND, NETHERITE -> 720;
         };
         return seconds * 20L;
     }
@@ -708,10 +709,8 @@ public final class SealGlyphEvents {
         return switch (tier) {
             case WOOD -> new HeartSealSpec(10.0D, 1.0F, ticksSeconds(5));
             case STONE -> new HeartSealSpec(12.0D, 1.0F, ticksSeconds(5));
-            case COPPER -> new HeartSealSpec(16.0D, 1.0F, ticksSeconds(4));
-            case IRON -> new HeartSealSpec(20.0D, 1.0F, ticksSeconds(4));
-            case GOLD -> new HeartSealSpec(20.0D, 1.0F, ticksSeconds(3));
-            case DIAMOND -> new HeartSealSpec(20.0D, 2.0F, ticksSeconds(4));
+            case COPPER, IRON -> new HeartSealSpec(20.0D, 1.0F, ticksSeconds(4));
+            case GOLD, DIAMOND -> new HeartSealSpec(20.0D, 2.0F, ticksSeconds(4));
             case NETHERITE -> new HeartSealSpec(20.0D, 2.0F, ticksSeconds(3));
         };
     }
@@ -721,10 +720,8 @@ public final class SealGlyphEvents {
             return switch (tier) {
                 case WOOD -> new SalvationSealSpec(2, 0, 0.0F, 0L);
                 case STONE -> new SalvationSealSpec(3, 0, 0.0F, 0L);
-                case COPPER -> new SalvationSealSpec(3, 0, 0.0F, 0L);
-                case IRON -> new SalvationSealSpec(4, 0, 0.0F, 0L);
-                case GOLD -> new SalvationSealSpec(4, 0, 0.0F, 0L);
-                case DIAMOND -> new SalvationSealSpec(5, 0, 0.0F, 0L);
+                case COPPER, IRON -> new SalvationSealSpec(4, 0, 0.0F, 0L);
+                case GOLD, DIAMOND -> new SalvationSealSpec(5, 0, 0.0F, 0L);
                 case NETHERITE -> new SalvationSealSpec(6, 0, 0.0F, 0L);
             };
         }
@@ -732,10 +729,8 @@ public final class SealGlyphEvents {
             return switch (tier) {
                 case WOOD -> null;
                 case STONE -> new SalvationSealSpec(1, ticksSecondsInt(3), 2.0F, ticksSeconds(5));
-                case COPPER -> new SalvationSealSpec(2, ticksSecondsInt(4), 3.0F, ticksSeconds(5));
-                case IRON -> new SalvationSealSpec(2, ticksSecondsInt(5), 4.0F, ticksSeconds(4));
-                case GOLD -> new SalvationSealSpec(2, ticksSecondsInt(5), 5.0F, ticksSeconds(3));
-                case DIAMOND -> new SalvationSealSpec(3, ticksSecondsInt(5), 6.0F, ticksSeconds(4));
+                case COPPER, IRON -> new SalvationSealSpec(2, ticksSecondsInt(5), 4.0F, ticksSeconds(4));
+                case GOLD, DIAMOND -> new SalvationSealSpec(3, ticksSecondsInt(5), 6.0F, ticksSeconds(4));
                 case NETHERITE -> new SalvationSealSpec(4, ticksSecondsInt(5), 8.0F, ticksSeconds(3));
             };
         }
@@ -746,10 +741,8 @@ public final class SealGlyphEvents {
         return switch (tier) {
             case WOOD -> new SpringSealSpec(5, ticksSeconds(20), 5.0F, ticksMinutes(4));
             case STONE -> new SpringSealSpec(7, ticksSeconds(18), 7.0F, ticksMinutes(5));
-            case COPPER -> new SpringSealSpec(9, ticksSeconds(16), 8.0F, ticksMinutes(6));
-            case IRON -> new SpringSealSpec(12, ticksSeconds(14), 10.0F, ticksMinutes(7));
-            case GOLD -> new SpringSealSpec(14, ticksSeconds(12), 12.0F, ticksMinutes(6));
-            case DIAMOND -> new SpringSealSpec(18, ticksSeconds(10), 14.0F, ticksMinutes(9));
+            case COPPER, IRON -> new SpringSealSpec(12, ticksSeconds(14), 10.0F, ticksMinutes(7));
+            case GOLD, DIAMOND -> new SpringSealSpec(18, ticksSeconds(10), 14.0F, ticksMinutes(9));
             case NETHERITE -> new SpringSealSpec(24, ticksSeconds(8), 16.0F, ticksMinutes(10));
         };
     }
@@ -758,10 +751,8 @@ public final class SealGlyphEvents {
         return switch (tier) {
             case WOOD -> new RestSealSpec(ticksSeconds(4), 1.0F, 1, 0.15F);
             case STONE -> new RestSealSpec(ticksSeconds(4), 1.0F, 1, 0.20F);
-            case COPPER -> new RestSealSpec(ticksSeconds(3), 1.25F, 1, 0.25F);
-            case IRON -> new RestSealSpec(ticksSeconds(3), 1.5F, 1, 0.30F);
-            case GOLD -> new RestSealSpec(ticksSeconds(2), 1.5F, 1, 0.35F);
-            case DIAMOND -> new RestSealSpec(ticksSeconds(3), 2.0F, 2, 0.45F);
+            case COPPER, IRON -> new RestSealSpec(ticksSeconds(3), 1.5F, 1, 0.30F);
+            case GOLD, DIAMOND -> new RestSealSpec(ticksSeconds(3), 2.0F, 2, 0.45F);
             case NETHERITE -> new RestSealSpec(ticksSeconds(2), 2.0F, 2, 0.55F);
         };
     }
@@ -771,17 +762,15 @@ public final class SealGlyphEvents {
             return switch (tier) {
                 case WOOD -> new SealRageSpec(0.0D, 0.20D, 0.0D, 0.005D, false, 0.0D, 0.0D, 0.0F);
                 case STONE -> new SealRageSpec(0.0D, 0.30D, 0.0D, 0.005D, false, 0.0D, 0.0D, 0.0F);
-                case COPPER -> new SealRageSpec(0.0D, 0.40D, 0.0D, 0.005D, false, 0.0D, 0.0D, 0.0F);
-                case IRON -> new SealRageSpec(0.0D, 0.50D, 0.0D, 0.005D, false, 0.0D, 0.0D, 0.0F);
-                case GOLD -> new SealRageSpec(0.0D, 0.60D, 0.0D, 0.005D, false, 0.0D, 0.0D, 0.0F);
-                case DIAMOND -> new SealRageSpec(0.0D, 0.60D, 0.0D, 0.005D, true, 3.0D, 1.0D, 0.0F);
+                case COPPER, IRON -> new SealRageSpec(0.0D, 0.50D, 0.0D, 0.005D, false, 0.0D, 0.0D, 0.0F);
+                case GOLD, DIAMOND -> new SealRageSpec(0.0D, 0.60D, 0.0D, 0.005D, true, 3.0D, 1.0D, 0.0F);
                 case NETHERITE -> new SealRageSpec(0.0D, 0.60D, 0.0D, 0.005D, true, 3.0D, 1.2D, 0.0F);
             };
         }
         if (RAGE_WORD.equals(word)) {
             return switch (tier) {
-                case WOOD, STONE, COPPER, IRON, GOLD -> null;
-                case DIAMOND -> new SealRageSpec(0.65D, 1.25D, 0.01D, 0.05D, true, 4.0D, 1.8D, 2.0F);
+                case WOOD, STONE, COPPER, IRON -> null;
+                case GOLD, DIAMOND -> new SealRageSpec(0.65D, 1.25D, 0.01D, 0.05D, true, 4.0D, 1.8D, 2.0F);
                 case NETHERITE -> new SealRageSpec(0.70D, 1.50D, 0.01D, 0.05D, true, 4.0D, 2.0D, 2.0F);
             };
         }
@@ -789,7 +778,7 @@ public final class SealGlyphEvents {
     }
 
     private static int staffRank(InkStaffTier tier) {
-        return tier.ordinal();
+        return StaffTierUtils.tierRank(tier);
     }
 
     private static long ticksSeconds(int seconds) {

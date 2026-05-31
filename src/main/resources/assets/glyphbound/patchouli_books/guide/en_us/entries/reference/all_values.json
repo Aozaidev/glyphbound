@@ -1,0 +1,108 @@
+{
+  "name": "All Glyph Values",
+  "icon": "minecraft:book",
+  "category": "glyphbound:reference",
+  "sortnum": 0,
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "title": "心",
+      "text": "Wood +1 heart/5 cap/90s$(br)Stone +2/10/2m$(br)Cu/Fe +3/15/5m, RegenII 3s$(br)Au/Dia +4/20/8m, RegenII 8s$(br)Nether +5/30/10m, RegenII 10s"
+    },
+    {
+      "type": "patchouli:text",
+      "title": "命",
+      "text": "Wood 5m, absorb 1s$(br)Stone 8m, 2s$(br)Cu/Fe 10m, 3s$(br)Au/Dia 10m, 4s$(br)Nether 10m, 4s"
+    },
+    {
+      "type": "patchouli:text",
+      "title": "救",
+      "text": "Wood unavailable$(br)Stone 5m, 3s absorb, 25% ink$(br)Cu/Fe 10m, 5s, 60%$(br)Au/Dia 10m, 5s, 80%$(br)Nether 10m, 5s, 100%"
+    },
+    {
+      "type": "patchouli:text",
+      "title": "忍",
+      "text": "Wood 10m, 25%, threshold 6$(br)Stone 10m, 35%, 8$(br)Cu/Fe 10m, 55%, 14$(br)Au/Dia 10m, 65%, 18$(br)Nether 10m, 70%, 20"
+    },
+    {
+      "type": "patchouli:text",
+      "title": "净",
+      "text": "Wood 4pts, 1 effect$(br)Stone 6, 1$(br)Cu/Fe 12, 3$(br)Au/Dia 18, 4$(br)Nether 22, 5"
+    },
+    {
+      "type": "patchouli:text",
+      "title": "稳",
+      "text": "Wood 55% block, 65% threshold$(br)Stone 45%, 55%$(br)Cu/Fe 25%, 35%$(br)Au/Dia 20%, 25%, +1 charge$(br)Nether 15%, 20%, +2"
+    },
+    {
+      "type": "patchouli:text",
+      "title": "息",
+      "text": "Wood 40t interval, 0.15hp$(br)Stone 36t, 0.2hp$(br)Cu/Fe 30t, 0.35hp$(br)Au/Dia 28t, 0.45hp$(br)Nether 24t, 0.55hp"
+    },
+    {
+      "type": "patchouli:text",
+      "title": "明",
+      "text": "Wood r10, 30s, hostile direction$(br)Stone r14, 45s, count$(br)Cu/Fe r18, 1m, distance$(br)Au/Dia r24, 2m, hostile glow$(br)Nether r30, 3m"
+    },
+    {
+      "type": "patchouli:text",
+      "title": "力",
+      "text": "Wood 5m, +20% dmg$(br)Stone 6m, +30%$(br)Cu/Fe 10m, +50%$(br)Au/Dia 10m, +60%, KB 3$(br)Nether 10m, +60%, KB 3"
+    },
+    {
+      "type": "patchouli:text",
+      "title": "怒",
+      "text": "Wood/Stone/Cu/Fe unavailable$(br)Au/Dia 10m, +65% dmg, KB 4$(br)Nether 10m, +70%, KB 4"
+    },
+    {
+      "type": "patchouli:text",
+      "title": "坚",
+      "text": "Wood +2 armor$(br)Stone +3$(br)Cu/Fe +4$(br)Au/Dia +5$(br)Nether +6"
+    },
+    {
+      "type": "patchouli:text",
+      "title": "魄",
+      "text": "Wood unavailable$(br)Stone 30%$(br)Cu/Fe 50%$(br)Au/Dia 70%$(br)Nether 80%"
+    },
+    {
+      "type": "patchouli:text",
+      "title": "脉",
+      "text": "Wood/Stone unavailable$(br)Cu/Fe r12, 1m, night vision + ore/chest/hostile marks$(br)Au/Dia r16, 2m, 18 clues$(br)Nether r20, 3m, 24 clues"
+    },
+    {
+      "type": "patchouli:text",
+      "title": "隐",
+      "text": "Wood/Stone unavailable$(br)Cu/Fe r18, detect 6$(br)Au/Dia r22, detect 4$(br)Nether r24, detect 3"
+    },
+    {
+      "type": "patchouli:text",
+      "title": "泉",
+      "text": "Wood 5hp, 30s CD$(br)Stone 7hp, 25s$(br)Cu/Fe 10hp, 15s$(br)Au/Dia 14hp, 10s$(br)Nether 16hp, 5s"
+    },
+    {
+      "type": "patchouli:text",
+      "title": "山",
+      "text": "Wood 2h stone, 45s$(br)Stone 3h cobble, 1m$(br)Cu/Fe 4h stone_brick, 2m$(br)Au/Dia 5h deepslate_brick, thorns 1, 3m$(br)Nether 5h obsidian, thorns 1.5, 4m$(br2)All 5 blocks wide."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "裂",
+      "text": "Wood 3x3 pit 2 deep, 30s$(br)Stone 3x3, 45s$(br)Cu/Fe 3x3, smoke, 90s$(br)Au/Dia 5x5, smoke, 2m$(br)Nether 5x5, smoke+slow, 3m"
+    },
+    {
+      "type": "patchouli:text",
+      "title": "墨",
+      "text": "Wood r8, x2.0 output, mob+100%hp$(br)Stone r10, x2.2, +85%$(br)Cu/Fe r14, x2.6, +55%$(br)Au/Dia r18, x3.0, +35%$(br)Nether r22, x4.0, +20%$(br2)Other glyphs cost 20% extra durability in field."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "印",
+      "text": "Wood r5, 3m$(br)Stone r7, 4m$(br)Cu/Fe r12, 9m$(br)Au/Dia r18, 12m$(br)Nether r24, 12m$(br2)Sealable: 心命救息忍净坚稳隐力怒泉"
+    },
+    {
+      "type": "patchouli:text",
+      "title": "入 Rewards",
+      "text": "Wood: iron 1-2, coal 6-10, bread 2$(br)Stone: iron 3-4, coal 8-12, bread 2-3$(br)Cu/Fe: iron 5-6, coal 10-14, bread 3, gold 60%, diamond 25%$(br)Au/Dia: iron 7-8, coal 12-16, bread 3-4, gold 1-2, diamond 75% 1-2, gapple 35%, lapis 16$(br)Nether: iron 9-10, coal 14-18, bread 4-5, gold 2-3, diamond 2-3, gapple 50%, lapis 24, netherite scrap x1"
+    }
+  ]
+}

@@ -1,0 +1,22 @@
+{
+  "parent": "glyphbound:first_tribulation",
+  "criteria": {
+    "done": {
+      "trigger": "minecraft:impossible"
+    }
+  },
+  "display": {
+    "description": "赢得渡劫。",
+    "frame": "task",
+    "icon": {
+      "count": 1,
+      "id": "minecraft:golden_apple"
+    },
+    "title": "渡劫成功"
+  },
+  "requirements": [
+    [
+      "done"
+    ]
+  ]
+}

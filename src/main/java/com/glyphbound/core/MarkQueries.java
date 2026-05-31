@@ -37,13 +37,15 @@ public final class MarkQueries {
             player.level().dimension().location().toString(),
             player.getUUID()
         );
-        List<InkMark> result = new ArrayList<>();
+        InkMark latest = null;
         for (InkMark mark : store.marksOn(target)) {
             if (mark.word().equals(word) && !mark.expired(gameTime)) {
-                result.add(mark);
+                if (latest == null || mark.bornGameTime() > latest.bornGameTime()) {
+                    latest = mark;
+                }
             }
         }
-        return result;
+        return latest == null ? List.of() : List.of(latest);
     }
 
     public static List<InkMark> getActiveMarkerMarks(ServerLevel level, String word, long gameTime) {

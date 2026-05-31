@@ -1,0 +1,18 @@
+{
+  "name": "Stage 3 Overview",
+  "icon": "aozainkmc:iron_ink_staff",
+  "category": "glyphbound:stage3_iron",
+  "sortnum": 0,
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "title": "What To Do",
+      "text": "Goal: unlock team utility and terrain control. Iron adds advanced death protection, burst healing, insight lighting, seals, walls, and collapse traps.$(br2)Key glyphs: $(l)救$(), $(l)泉$(), $(l)脉$(), $(l)印$(), $(l)山$(), $(l)裂$()."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Seal System",
+      "text": "Use V to write $(l)印$() on a block, then write a second glyph. Supported: 心命救息忍净坚稳隐力怒泉.$(br2)All players in range benefit. Radius and duration scale with stave tier.$(br2)Stage exit: fill Iron momentum, win $(l)劫$(), then upgrade to Diamond. Gold is an endpoint branch."
+    }
+  ]
+}

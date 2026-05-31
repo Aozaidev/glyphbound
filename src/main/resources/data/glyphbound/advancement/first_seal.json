@@ -1,0 +1,22 @@
+{
+  "parent": "glyphbound:first_glyph",
+  "criteria": {
+    "done": {
+      "trigger": "minecraft:impossible"
+    }
+  },
+  "display": {
+    "description": "首次创建封印。",
+    "frame": "task",
+    "icon": {
+      "count": 1,
+      "id": "minecraft:chiseled_stone_bricks"
+    },
+    "title": "封字入印"
+  },
+  "requirements": [
+    [
+      "done"
+    ]
+  ]
+}

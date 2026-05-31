@@ -1,0 +1,22 @@
+{
+  "parent": "glyphbound:netherite_full",
+  "criteria": {
+    "done": {
+      "trigger": "minecraft:impossible"
+    }
+  },
+  "display": {
+    "description": "首次进入墨界。",
+    "frame": "task",
+    "icon": {
+      "count": 1,
+      "id": "glyphbound:ink_brick"
+    },
+    "title": "入墨界"
+  },
+  "requirements": [
+    [
+      "done"
+    ]
+  ]
+}

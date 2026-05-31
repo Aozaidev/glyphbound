@@ -1,0 +1,10 @@
+{
+  "type": "glyphbound:ink_realm",
+  "generator": {
+    "type": "glyphbound:ink_realm",
+    "biome_source": {
+      "type": "minecraft:fixed",
+      "biome": "glyphbound:ink_realm"
+    }
+  }
+}

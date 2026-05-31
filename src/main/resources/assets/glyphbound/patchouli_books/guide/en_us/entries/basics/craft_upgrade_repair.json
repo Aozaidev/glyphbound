@@ -1,0 +1,73 @@
+{
+  "name": "Crafting, Upgrading, Repair",
+  "icon": "minecraft:anvil",
+  "category": "glyphbound:basics",
+  "sortnum": 1,
+  "pages": [
+    {
+      "type": "patchouli:crafting",
+      "recipe": "aozainkmc:ink_brush",
+      "title": "Wood Stave",
+      "text": "Craft your first stave: plank in the top-right, stick in the bottom-left.$(br2)It is not a vertical vanilla-tool shape."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Upgrade Layout",
+      "text": "Upgrade in a crafting table: advanced material in the top-right, old stave in the bottom-left.$(br2)Main path: Wood→Stone→Iron→Diamond→Netherite.$(br)Branches: Stone→Copper (endpoint), Iron→Gold (endpoint).$(br2)The next pages show the layout. If no result appears, first make sure the current stave has won its tribulation and is upgrade-ready."
+    },
+    {
+      "type": "glyphbound:staff_upgrade_pair",
+      "heading": "Main Upgrades I",
+      "left_label": "Wood → Stone",
+      "left_material": "minecraft:cobblestone",
+      "left_staff": "aozainkmc:ink_brush",
+      "left_result": "aozainkmc:stone_ink_staff",
+      "right_label": "Stone → Iron",
+      "right_material": "minecraft:iron_ingot",
+      "right_staff": "aozainkmc:stone_ink_staff",
+      "right_result": "aozainkmc:iron_ink_staff",
+      "note": "Stone accepts vanilla stone tool materials; cobblestone is shown here."
+    },
+    {
+      "type": "glyphbound:staff_upgrade_pair",
+      "heading": "Main Upgrades II",
+      "left_label": "Iron → Diamond",
+      "left_material": "minecraft:diamond",
+      "left_staff": "aozainkmc:iron_ink_staff",
+      "left_result": "aozainkmc:diamond_ink_staff",
+      "right_label": "Diamond → Netherite",
+      "right_material": "minecraft:netherite_ingot",
+      "right_staff": "aozainkmc:diamond_ink_staff",
+      "right_result": "aozainkmc:netherite_ink_staff",
+      "note": "Each old stave must win its tribulation before upgrading."
+    },
+    {
+      "type": "glyphbound:staff_upgrade_pair",
+      "heading": "Branch Upgrades",
+      "left_label": "Stone → Copper",
+      "left_material": "minecraft:copper_ingot",
+      "left_staff": "aozainkmc:stone_ink_staff",
+      "left_result": "aozainkmc:copper_ink_staff",
+      "right_label": "Iron → Gold",
+      "right_material": "minecraft:gold_ingot",
+      "right_staff": "aozainkmc:iron_ink_staff",
+      "right_result": "aozainkmc:gold_ink_staff",
+      "note": "Copper and Gold are endpoint branches."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Momentum & Tribulation",
+      "text": "Writing a valid glyph gives +1 momentum. Winning 入 grants bonus momentum: Wood+5, Stone+8, Copper+10, Iron/Gold+12, Diamond/Netherite+15.$(br2)When full, write $(l)劫$(), win the tribulation arena, and the current stave becomes upgrade-ready."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Stage Targets",
+      "text": "Wood30 → Stone45 → Iron70 → Diamond110 → Netherite160.$(br2)Copper55 and Gold90 are branch targets. Branch staves cannot continue upgrading; craft a new main-path stave to continue."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Repair",
+      "text": "Anvil: first slot = stave to keep, second slot = same-tier stave or $(l)Ink Core$().$(br)Ink Cores repair 250 durability each, max 4 per repair.$(br)Same-tier repair keeps the first stave's data.$(br2)Higher tiers cost more XP and cores."
+    }
+  ]
+}
